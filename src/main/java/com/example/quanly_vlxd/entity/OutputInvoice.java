@@ -21,8 +21,8 @@ import java.util.Set;
 public class OutputInvoice {
 
     @Id
-    @Column(name = "id")
-    private String Id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int Id;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "cus_id", foreignKey = @ForeignKey(name = "FK_OUTPUT_INVOICE_CUSTOMER"))
@@ -34,11 +34,11 @@ public class OutputInvoice {
     @JsonIgnoreProperties(value = "outputInvoices")
     private Employee employee;
 
-    @Column(name = "creation_time")
+    @Column(name = "creation_time",nullable = false)
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date CreationTime;
 
-    @Column(name = "update_time")
+    @Column(name = "update_time",nullable = false)
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date UpdateTime;
 

@@ -1,5 +1,6 @@
 package com.example.quanly_vlxd.config;
 
+import com.example.quanly_vlxd.enums.RoleEnums;
 import com.example.quanly_vlxd.jwt.JwtAuthenticationFilter;
 import com.example.quanly_vlxd.service.impl.UserDetailServiceImpl;
 import lombok.RequiredArgsConstructor;
@@ -32,6 +33,7 @@ public class SecurityConfig {
         httpSecurity.csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth-> auth
                         .requestMatchers("/api/v1/user/**").permitAll()
+                        .requestMatchers("/api/v1/supplier/**").hasAnyAuthority(RoleEnums.MANAGER.name())
                         .anyRequest().authenticated())
                 .userDetailsService(userDetailService)
                 .sessionManagement(session-> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

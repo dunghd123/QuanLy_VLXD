@@ -25,7 +25,7 @@ public class UserController {
         return new ResponseEntity<>(userSerVice.login(loginRequest), HttpStatus.OK);
     }
     @PostMapping("add-new-user")
-    public ResponseEntity<MessageResponse> login(@RequestBody AddUserRequest addUserRequest) {
+    public ResponseEntity<MessageResponse> adduser(@RequestBody AddUserRequest addUserRequest) {
         return new ResponseEntity<>(userSerVice.addUser(addUserRequest), HttpStatus.CREATED);
     }
     @PutMapping("logout")

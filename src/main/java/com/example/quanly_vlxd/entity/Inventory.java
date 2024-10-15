@@ -31,10 +31,10 @@ public class Inventory {
     @JsonIgnoreProperties(value = "inventories")
     private Product product;
 
-    @Column(name = "quantity")
+    @Column(name = "quantity",nullable = false)
     private int Quantity;
 
-    @Column(name = "last_updated")
+    @Column(name = "last_updated",nullable = false)
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date LastUpdated;
 

@@ -16,13 +16,13 @@ import java.util.Set;
 @AllArgsConstructor
 public class Warehouse {
     @Id
-    @Column(name = "id")
-    private String Id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int Id;
 
-    @Column(name = "name")
+    @Column(name = "name",nullable = false)
     private String Name;
 
-    @Column(name = "location")
+    @Column(name = "location",nullable = false)
     private String Location;
 
     @Column(name = "isactive")

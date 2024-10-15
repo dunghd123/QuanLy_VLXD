@@ -17,7 +17,6 @@ public class OutputInvoiceDetail {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
     private int id;
 
     @ManyToOne(fetch = FetchType.EAGER)
@@ -25,17 +24,17 @@ public class OutputInvoiceDetail {
     @JsonIgnoreProperties(value = "outputInvoice")
     private OutputInvoice outputInvoice;
 
-    @Column(name = "pro_id")
-    private String Pro_Id;
+    @Column(name = "pro_id",nullable = false)
+    private int Pro_Id;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "wh_id", foreignKey = @ForeignKey(name = "FK_OUTPUT_INVOICE_DETAIL_WAREHOUSE"))
     @JsonIgnoreProperties(value = "outputInvoiceDetails")
     private Warehouse warehouse;
 
-    @Column(name = "quantity")
+    @Column(name = "quantity",nullable = false)
     private int quantity;
 
-    @Column(name = "unit_price")
+    @Column(name = "unit_price",nullable = false)
     private double unitPrice;
 }

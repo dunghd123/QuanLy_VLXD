@@ -16,8 +16,8 @@ import java.util.Set;
 @AllArgsConstructor
 public class Category {
     @Id
-    @Column(name = "id",unique = true,nullable = false)
-    private String Id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int Id;
 
     @Column(name = "name",nullable = false)
     private String Name;

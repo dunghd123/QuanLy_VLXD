@@ -6,6 +6,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
@@ -24,8 +25,6 @@ public class JwtTokenProvider {
     @Value("${com.jwt.refresh_expiration}")
     private String JWT_REFRESH_EXPIRATION;
 
-
-    //lay thong tin username tu jwt
     public String extractUsername(String jwtToken){
         return extractClaim(jwtToken, Claims::getSubject);
     }
@@ -45,7 +44,10 @@ public class JwtTokenProvider {
         return generateToken(new HashMap<>(),userCustomDetail);
     }
     public String generateToken(Map<String, Object> extracClaims, UserCustomDetail userCustomDetail){
-        return buildToken(extracClaims,userCustomDetail,JWT_EXPIRATION);
+        extracClaims.put("roles", userCustomDetail.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .toList());
+        return buildToken(extracClaims, userCustomDetail, JWT_EXPIRATION);
     }
     public String generateRefreshToken(UserCustomDetail userCustomDetail){
         return buildToken(new HashMap<>(),userCustomDetail, Integer.parseInt(JWT_REFRESH_EXPIRATION));

@@ -16,16 +16,16 @@ import java.util.Set;
 @AllArgsConstructor
 public class Product {
     @Id
-    @Column(name = "id")
-    private String Id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int Id;
 
-    @Column(name = "name")
+    @Column(name = "name",nullable = false)
     private String Name;
 
-    @Column(name = "unit_measure")
+    @Column(name = "unit_measure",nullable = false)
     private String UnitMeasure;
 
-    @Column(name = "origin")
+    @Column(name = "origin",nullable = false)
     private String Origin;
 
     @Column(name = "isactive")

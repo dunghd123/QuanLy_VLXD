@@ -5,10 +5,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.Set;
 
@@ -17,15 +14,16 @@ import java.util.Set;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class Supplier {
     @Id
-    @Column(name = "id")
+    @Column(name = "id",nullable = false,unique = true)
     private String Id;
-    @Column(name = "name")
+    @Column(name = "name",nullable = false)
     private String Name;
-    @Column(name = "address")
+    @Column(name = "address",nullable = false)
     private String Address;
-    @Column(name = "phone_num")
+    @Column(name = "phone_num",nullable = false,unique = true)
     private String PhoneNum;
     @Column(name = "isactive")
     private boolean IsActive;

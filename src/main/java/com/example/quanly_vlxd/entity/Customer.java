@@ -16,8 +16,8 @@ import java.util.Set;
 @AllArgsConstructor
 public class Customer {
     @Id
-    @Column(name = "id",nullable = false,unique = true)
-    private String Id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int Id;
 
     @Column(name = "name",nullable = false)
     private String Name;

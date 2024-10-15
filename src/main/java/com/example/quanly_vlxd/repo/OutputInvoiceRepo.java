@@ -6,5 +6,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface OutputInvoiceRepo extends JpaRepository<OutputInvoice,String> {
+public interface OutputInvoiceRepo extends JpaRepository<OutputInvoice,Integer> {
 }

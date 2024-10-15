@@ -18,14 +18,14 @@ import java.util.Set;
 @AllArgsConstructor
 public class InputInvoice {
     @Id
-    @Column(name = "id")
-    private String Id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int Id;
 
-    @Column(name = "creation_time")
+    @Column(name = "creation_time",nullable = false)
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone = "GMT+7")
     private Date CreationTime;
 
-    @Column(name = "update_time")
+    @Column(name = "update_time",nullable = false)
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone = "GMT+7")
     private Date UpdateTime;
 

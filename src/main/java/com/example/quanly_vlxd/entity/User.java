@@ -17,11 +17,11 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int ID;
-    @Column(name = "username")
+    @Column(name = "username",nullable = false,unique = true)
     private String UserName;
-    @Column(name = "password")
+    @Column(name = "password",nullable = false)
     private String Password;
-    @Column(name = "status")
+    @Column(name = "status",nullable = false)
     private boolean Status;
     @Column(name = "isactive")
     private boolean IsActive;

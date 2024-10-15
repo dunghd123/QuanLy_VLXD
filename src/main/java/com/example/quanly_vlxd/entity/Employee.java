@@ -18,23 +18,23 @@ import java.util.Set;
 @AllArgsConstructor
 public class Employee {
     @Id
-    @Column(name = "id")
-    private String Id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int Id;
 
-    @Column(name = "name")
+    @Column(name = "name",nullable = false)
     private String Name;
 
-    @Column(name = "gender")
+    @Column(name = "gender",nullable = false)
     private String Gender;
 
-    @Column(name = "dob")
+    @Column(name = "dob",nullable = false)
     @JsonFormat(pattern = "dd-MM-yyyy",shape = JsonFormat.Shape.STRING,timezone = "GMT+7")
     private Date Dob;
 
-    @Column(name = "address")
+    @Column(name = "address",nullable = false)
     private String Address;
 
-    @Column(name = "phone_num")
+    @Column(name = "phone_num",nullable = false,unique = true)
     private String PhoneNum;
 
     @Column(name = "description")

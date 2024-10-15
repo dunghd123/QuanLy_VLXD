@@ -27,5 +27,4 @@ public class CustomerDTO {
     @Pattern(regexp = "^\\+?[0-9]{10,15}$", message = "Phone number must be valid and contain only digits")
     private String phoneNum;
 
-    private boolean isActive;
 }

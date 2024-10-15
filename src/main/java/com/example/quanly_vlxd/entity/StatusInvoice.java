@@ -19,7 +19,7 @@ public class StatusInvoice {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int Id;
 
-    @Column(name = "name")
+    @Column(name = "name",nullable = false)
     private String Name;
 
     @OneToMany(mappedBy = "status")
