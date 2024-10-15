@@ -1,10 +1,7 @@
 package com.example.quanly_vlxd.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.*;
 import lombok.*;
 
 import java.util.Set;
@@ -17,8 +14,8 @@ import java.util.Set;
 @Builder
 public class Supplier {
     @Id
-    @Column(name = "id",nullable = false,unique = true)
-    private String Id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int Id;
     @Column(name = "name",nullable = false)
     private String Name;
     @Column(name = "address",nullable = false)
