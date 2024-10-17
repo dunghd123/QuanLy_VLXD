@@ -13,6 +13,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(name = "input_invoice_details")
 public class InputInvoiceDetail {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

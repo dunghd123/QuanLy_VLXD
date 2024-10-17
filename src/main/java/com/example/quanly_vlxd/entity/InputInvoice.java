@@ -16,6 +16,7 @@ import java.util.Set;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(name = "input_invoices")
 public class InputInvoice {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

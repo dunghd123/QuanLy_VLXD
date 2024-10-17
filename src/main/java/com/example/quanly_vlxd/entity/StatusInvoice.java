@@ -14,6 +14,7 @@ import java.util.Set;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(name = "status_invoices")
 public class StatusInvoice {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

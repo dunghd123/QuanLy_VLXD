@@ -13,11 +13,12 @@ import java.util.Date;
 import java.util.Set;
 
 @Entity
-@Table(name = "output_invoice")
+@Table(name = "output_invoices")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+
 public class OutputInvoice {
 
     @Id

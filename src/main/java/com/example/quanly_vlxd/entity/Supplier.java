@@ -12,15 +12,16 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Table(name = "suppliers")
 public class Supplier {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int Id;
-    @Column(name = "name",nullable = false)
+    @Column(name = "name")
     private String Name;
-    @Column(name = "address",nullable = false)
+    @Column(name = "address")
     private String Address;
-    @Column(name = "phone_num",nullable = false,unique = true)
+    @Column(name = "phone_num",unique = true)
     private String PhoneNum;
     @Column(name = "isactive")
     private boolean IsActive;
