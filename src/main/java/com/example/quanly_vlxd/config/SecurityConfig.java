@@ -32,6 +32,11 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
         httpSecurity.csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth-> auth
+                        .requestMatchers( "/swagger-ui/**",
+                                "/v3/api-docs/**",      // Đường dẫn cho OpenAPI
+                                "/swagger-resources/**",
+                                "/swagger-ui.html",
+                                "/webjars/**").permitAll()
                         .requestMatchers("/api/v1/user/**").permitAll()
                         .requestMatchers("/api/v1/supplier/**").hasAnyAuthority(RoleEnums.MANAGER.name())
                         .anyRequest().authenticated())
