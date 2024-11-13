@@ -18,15 +18,16 @@ import java.util.Set;
 public class Customer {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "cus_id")
     private int Id;
 
-    @Column(name = "name",nullable = false)
+    @Column(name = "cus_name",nullable = false)
     private String Name;
 
-    @Column(name = "address",nullable = false)
+    @Column(name = "cus_address",nullable = false)
     private String Address;
 
-    @Column(name = "phone_num",nullable = false,unique = true)
+    @Column(name = "cus_phonenum",nullable = false,unique = true)
     private String PhoneNum;
 
     @Column(name = "isactive")

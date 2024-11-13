@@ -18,16 +18,17 @@ import java.util.Set;
 public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "pro_id")
     private int Id;
 
-    @Column(name = "name",nullable = false)
+    @Column(name = "pro_name",nullable = false,unique = true)
     private String Name;
 
-    @Column(name = "unit_measure",nullable = false)
+    @Column(name = "pro_unit_measure",nullable = false)
     private String UnitMeasure;
 
-    @Column(name = "origin",nullable = false)
-    private String Origin;
+    @Column(name = "pro_description")
+    private String Description;  ;
 
     @Column(name = "isactive")
     private boolean IsActive;
@@ -39,9 +40,13 @@ public class Product {
 
     @OneToMany(mappedBy = "product")
     @JsonIgnoreProperties(value = "product")
-    Set<Inventory> inventories;
+    Set<WareHouse_Product> inventories;
 
     @OneToMany(mappedBy = "product")
     @JsonIgnoreProperties(value = "product")
     Set<InputInvoiceDetail> inputInvoiceDetails;
+
+    @OneToMany(mappedBy = "product")
+    @JsonIgnoreProperties(value = "product")
+    Set<ProductPriceHistory> productPriceHistories;
 }

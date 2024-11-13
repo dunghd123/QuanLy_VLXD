@@ -16,18 +16,19 @@ import java.util.Set;
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "user_id")
     private int ID;
     @Column(name = "username",nullable = false,unique = true)
     private String UserName;
     @Column(name = "password",nullable = false)
     private String Password;
-    @Column(name = "status",nullable = false)
+    @Column(name = "user_status",nullable = false)
     private boolean Status;
     @Column(name = "isactive")
     private boolean IsActive;
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "roleid",foreignKey = @ForeignKey(name = "FK_USER_ROLE"))
+    @JoinColumn(name = "role_id",foreignKey = @ForeignKey(name = "FK_USER_ROLE"))
     @JsonIgnoreProperties(value = "users")
     private Role role;
 

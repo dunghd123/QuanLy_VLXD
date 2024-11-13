@@ -20,25 +20,26 @@ import java.util.Set;
 public class Employee {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "emp_id")
     private int Id;
 
-    @Column(name = "name",nullable = false)
+    @Column(name = "emp_name",nullable = false)
     private String Name;
 
-    @Column(name = "gender",nullable = false)
+    @Column(name = "emp_gender",nullable = false)
     private String Gender;
 
-    @Column(name = "dob",nullable = false)
+    @Column(name = "emp_dob",nullable = false)
     @JsonFormat(pattern = "dd-MM-yyyy",shape = JsonFormat.Shape.STRING,timezone = "GMT+7")
     private Date Dob;
 
-    @Column(name = "address",nullable = false)
+    @Column(name = "emp_address",nullable = false)
     private String Address;
 
-    @Column(name = "phone_num",nullable = false,unique = true)
+    @Column(name = "emp_phonenum",nullable = false,unique = true)
     private String PhoneNum;
 
-    @Column(name = "description")
+    @Column(name = "emp_description")
     private String Description;
 
     @Column(name = "isactive")

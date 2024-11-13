@@ -19,8 +19,9 @@ import java.util.Set;
 public class Role {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "role_id")
     private int Id;
-    @Column(name = "rolename")
+    @Column(name = "role_name")
     @Enumerated(EnumType.STRING)
     private RoleEnums RoleName;
 

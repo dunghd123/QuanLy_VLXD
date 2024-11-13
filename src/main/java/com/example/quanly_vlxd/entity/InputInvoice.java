@@ -20,23 +20,22 @@ import java.util.Set;
 public class InputInvoice {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "inp_id")
     private int Id;
 
-    @Column(name = "creation_time",nullable = false)
+    @Column(name = "inp_creation_time",nullable = false)
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone = "GMT+7")
     private Date CreationTime;
 
-    @Column(name = "update_time",nullable = false)
+    @Column(name = "inp_update_time",nullable = false)
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone = "GMT+7")
     private Date UpdateTime;
 
+    @Column(name = "inp_status")
+    private boolean Status;
+
     @Column(name = "isactive")
     private boolean IsActive;
-
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "status_id", foreignKey = @ForeignKey(name = "FK_INPUT_INVOICE_STATUS"))
-    @JsonIgnoreProperties(value = "inputInvoices")
-    private StatusInvoice status;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "sup_id", foreignKey = @ForeignKey(name = "FK_INPUT_INVOICE_SUPPLIER"))

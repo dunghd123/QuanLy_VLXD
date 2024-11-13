@@ -19,6 +19,7 @@ import java.util.Date;
 public class RefreshToken {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "ref_id")
     private int Id;
     @Column(name = "token")
     private String token;

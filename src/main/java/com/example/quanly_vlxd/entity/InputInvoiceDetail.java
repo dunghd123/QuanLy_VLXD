@@ -17,14 +17,14 @@ import lombok.Setter;
 public class InputInvoiceDetail {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "iid_id")
     private int Id;
-
-    @Column(name = "quantity")
+    @Column(name = "iid_quantity")
     private int Quantity;
-
-    @Column(name = "unit_price")
-
+    @Column(name = "iid_unit_price")
     private double UnitPrice;
+    @Column(name = "iid_amount")
+    private double Amount;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "inp_id", foreignKey = @ForeignKey(name = "FK_INPUT_INVOICE_DETAIL_INVOICE"))

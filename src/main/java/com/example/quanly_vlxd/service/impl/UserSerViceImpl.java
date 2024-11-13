@@ -63,6 +63,11 @@ public class UserSerViceImpl implements UserService {
     @Override
     public MessageResponse addUser(AddUserRequest addUserRequest) {
         Optional<Role> findbyRole= roleRepo.findByRoleName(addUserRequest.getRole().getRoleName().name());
+        for(User user: userRepo.findAll()){
+            if(user.getUserName().equals(addUserRequest.getUsername())){
+                return MessageResponse.builder().message("User name already exists!!").build();
+            }
+        }
         User user= User
                 .builder()
                 .UserName(addUserRequest.getUsername())

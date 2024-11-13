@@ -16,12 +16,13 @@ import java.util.Set;
 public class Supplier {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "sup_id")
     private int Id;
-    @Column(name = "name")
+    @Column(name = "sup_name")
     private String Name;
-    @Column(name = "address")
+    @Column(name = "sup_address")
     private String Address;
-    @Column(name = "phone_num",unique = true)
+    @Column(name = "sup_phonenum",unique = true)
     private String PhoneNum;
     @Column(name = "isactive")
     private boolean IsActive;

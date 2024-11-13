@@ -7,11 +7,16 @@ import com.example.quanly_vlxd.dto.response.MessageResponse;
 import com.example.quanly_vlxd.dto.response.TokenResponse;
 import com.example.quanly_vlxd.service.impl.UserSerViceImpl;
 
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
+import static com.example.quanly_vlxd.help.MapErrors.getMapErrors;
 
 
 @RestController
@@ -25,7 +30,7 @@ public class UserController {
         return new ResponseEntity<>(userSerVice.login(loginRequest), HttpStatus.OK);
     }
     @PostMapping("add-new-user")
-    public ResponseEntity<MessageResponse> adduser(@RequestBody AddUserRequest addUserRequest) {
+    public ResponseEntity<MessageResponse> adduser(@Valid @RequestBody AddUserRequest addUserRequest) {
         return new ResponseEntity<>(userSerVice.addUser(addUserRequest), HttpStatus.CREATED);
     }
     @PutMapping("logout")
@@ -35,6 +40,11 @@ public class UserController {
     @PutMapping("change-password")
     public ResponseEntity<MessageResponse> changePassword(@RequestBody ChangePasswordRequest changePasswordRequest){
         return new ResponseEntity<>(userSerVice.changePass(changePasswordRequest),HttpStatus.OK);
+    }
+    @ResponseStatus(HttpStatus.BAD_REQUEST) // Trả về mã 400 BAD_REQUEST
+    @ExceptionHandler(MethodArgumentNotValidException.class) // Xử lý ngoại lệ MethodArgumentNotValidException
+    public Map<String, String> handleValidationExceptions(MethodArgumentNotValidException ex) {
+        return getMapErrors(ex);
     }
 
 }

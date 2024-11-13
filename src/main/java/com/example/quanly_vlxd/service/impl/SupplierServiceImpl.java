@@ -9,6 +9,7 @@ import com.example.quanly_vlxd.repo.InputInvoiceDetailRepo;
 import com.example.quanly_vlxd.repo.InputInvoiceRepo;
 import com.example.quanly_vlxd.repo.SupplierRepo;
 import com.example.quanly_vlxd.service.SupplierService;
+import com.fasterxml.jackson.databind.ObjectReader;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.data.domain.Page;
@@ -32,6 +33,12 @@ public class SupplierServiceImpl implements SupplierService {
 
     @Override
     public MessageResponse addSupplier(SupplierDTO supplierRequest) {
+        for(Supplier supplier: supplierRepo.findAll()){
+            if(supplier.getName().equals(supplierRequest.getName())
+            && supplier.getAddress().equals(supplierRequest.getAddress())){
+                return MessageResponse.builder().message("Supplier name is exist").build();
+            }
+        }
         Supplier newSup= Supplier.builder()
                 .Name(supplierRequest.getName())
                 .Address(supplierRequest.getAddress())
