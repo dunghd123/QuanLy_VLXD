@@ -13,9 +13,6 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CustomerDTO {
-    @NotBlank(message = "Customer ID is required")
-    @Size(max = 20, message = "Customer ID must not exceed 20 characters")
-    private String id;
 
     @NotBlank(message = "Customer name is required")
     private String name;
@@ -24,7 +21,7 @@ public class CustomerDTO {
     private String address;
 
     @NotBlank(message = "Phone number is required")
-    @Pattern(regexp = "^\\+?[0-9]{10,15}$", message = "Phone number must be valid and contain only digits")
+    @Pattern(regexp = "^\\+?[0-9]{10,15}$", message = "Phone number must be valid and contain only digits between 10 and 15 digits")
     private String phoneNum;
 
 }

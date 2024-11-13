@@ -39,6 +39,7 @@ public class SecurityConfig {
                                 "/webjars/**").permitAll()
                         .requestMatchers("/api/v1/user/**").permitAll()
                         .requestMatchers("/api/v1/supplier/**").hasAnyAuthority(RoleEnums.MANAGER.name())
+                        .requestMatchers("/api/v1/customer/**").hasAnyAuthority(RoleEnums.EMPLOYEE.name(),RoleEnums.MANAGER.name())
                         .anyRequest().authenticated())
                 .userDetailsService(userDetailService)
                 .sessionManagement(session-> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

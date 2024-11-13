@@ -32,17 +32,20 @@ public class SupplierServiceImpl implements SupplierService {
     private final InputInvoiceDetailRepo inputInvoiceDetailRepo;
 
     @Override
-    public MessageResponse addSupplier(SupplierDTO supplierRequest) {
+    public MessageResponse addSupplier(SupplierDTO supplierDTO) {
         for(Supplier supplier: supplierRepo.findAll()){
-            if(supplier.getName().equals(supplierRequest.getName())
-            && supplier.getAddress().equals(supplierRequest.getAddress())){
-                return MessageResponse.builder().message("Supplier name is exist").build();
+            if(supplier.getName().equals(supplierDTO.getName())
+                && supplier.getAddress().equals(supplierDTO.getAddress())){
+                return MessageResponse.builder().message("Supplier has existed!!!").build();
+            }
+            if(supplier.getPhoneNum().equals(supplierDTO.getPhoneNum())){
+                return MessageResponse.builder().message("Phone number has existed!!!").build();
             }
         }
         Supplier newSup= Supplier.builder()
-                .Name(supplierRequest.getName())
-                .Address(supplierRequest.getAddress())
-                .PhoneNum(supplierRequest.getPhoneNum())
+                .Name(supplierDTO.getName())
+                .Address(supplierDTO.getAddress())
+                .PhoneNum(supplierDTO.getPhoneNum())
                 .IsActive(true)
                 .build();
         supplierRepo.save(newSup);
@@ -54,6 +57,17 @@ public class SupplierServiceImpl implements SupplierService {
         Optional<Supplier> supplier= supplierRepo.findById(id);
         if(supplier.isEmpty()){
             return MessageResponse.builder().message("ID: "+id+ " is not exist").build();
+        }
+        List<Supplier> list= new ArrayList<>(supplierRepo.findAll());
+        list.removeIf(s->s.getId()==id);
+        for(Supplier s: list){
+            if(s.getName().equals(supplierDTO.getName())
+                    && s.getAddress().equals(supplierDTO.getAddress())){
+                return MessageResponse.builder().message("Supplier has existed!!!").build();
+            }
+            if(s.getPhoneNum().equals(supplierDTO.getPhoneNum())){
+                return MessageResponse.builder().message("Phone number has existed!!!").build();
+            }
         }
         Supplier supCur= supplier.get();
         supCur.setName(supplierDTO.getName());
@@ -88,13 +102,6 @@ public class SupplierServiceImpl implements SupplierService {
     @Override
     public Page<Supplier> getList(int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<Supplier> supplierPage = supplierRepo.findAll(pageable);
-        List<Supplier> activeSuppliers = new ArrayList<>();
-        for (Supplier supplier : supplierPage) {
-            if (supplier.isIsActive()) {
-                activeSuppliers.add(supplier);
-            }
-        }
-        return new PageImpl<>(activeSuppliers, pageable, supplierPage.getTotalElements());
+        return  supplierRepo.getAll(pageable);
     }
 }

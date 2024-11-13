@@ -31,6 +31,11 @@ public class CategoryServiceImpl implements CategoryService {
     private InputInvoiceDetailRepo inputInvoiceDetailRepo;
     @Override
     public MessageResponse addCategory(CategoryDTO categoryDTO) {
+        for(Category category: categoryRepo.findAll()){
+            if(category.getName().equals(categoryDTO.getName())){
+                return MessageResponse.builder().message("Category name already exist!!!").build();
+            }
+        }
         Category newCate= Category.builder()
                 .Name(categoryDTO.getName())
                 .Description(categoryDTO.getDescription())
