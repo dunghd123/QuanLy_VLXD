@@ -10,7 +10,7 @@ import com.example.quanly_vlxd.repo.ProductRepo;
 import com.example.quanly_vlxd.service.CategoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
+
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -89,13 +89,6 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public Page<Category> getAll(int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<Category> categoryPage = categoryRepo.findAll(pageable);
-        List<Category> activeCategories = new ArrayList<>();
-        for (Category category : categoryPage) {
-            if (category.isIsActive()) {
-                activeCategories.add(category);
-            }
-        }
-        return new PageImpl<>(activeCategories, pageable, categoryPage.getTotalElements());
+        return categoryRepo.getAll(pageable);
     }
 }
