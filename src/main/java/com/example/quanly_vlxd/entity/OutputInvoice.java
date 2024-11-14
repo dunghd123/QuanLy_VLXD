@@ -29,9 +29,15 @@ public class OutputInvoice {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone = "GMT+7")
     private Date CreationTime;
 
-    @Column(name = "oi_update_time",nullable = false)
+    @Column(name = "oi_update_time")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone = "GMT+7")
     private Date UpdateTime;
+
+    @Column(name = "oi_ship_address",nullable = false)
+    private String ShipAddress;
+
+    @Column(name = "oi_status")
+    private boolean Status;
 
     @Column(name = "isactive")
     private boolean IsActive;

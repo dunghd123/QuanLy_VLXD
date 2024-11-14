@@ -1,5 +1,6 @@
 package com.example.quanly_vlxd.entity;
 
+import com.example.quanly_vlxd.enums.InvoiceTypeEnums;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -24,6 +25,9 @@ public class ProductPriceHistory {
     private String StartDate;
     @Column(name = "pph_enddate")
     private String EndDate;
+    @Column(name = "pph_invoice_type")
+    @Enumerated(EnumType.STRING)
+    private InvoiceTypeEnums InvoiceType;
     @Column(name = "isactive")
     private boolean IsActive;
 
