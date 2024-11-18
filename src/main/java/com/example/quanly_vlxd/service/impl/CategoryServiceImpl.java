@@ -15,20 +15,22 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 @Service
 public class CategoryServiceImpl implements CategoryService {
+    private final CategoryRepo categoryRepo;
+    private final ProductRepo productRepo;
+    private final InventoryRepo inventoryRepo;
+    private final InputInvoiceDetailRepo inputInvoiceDetailRepo;
+
     @Autowired
-    private CategoryRepo categoryRepo;
-    @Autowired
-    private ProductRepo productRepo;
-    @Autowired
-    private InventoryRepo inventoryRepo;
-    @Autowired
-    private InputInvoiceDetailRepo inputInvoiceDetailRepo;
+    public CategoryServiceImpl(CategoryRepo categoryRepo, ProductRepo productRepo, InventoryRepo inventoryRepo, InputInvoiceDetailRepo inputInvoiceDetailRepo) {
+        this.categoryRepo = categoryRepo;
+        this.productRepo = productRepo;
+        this.inventoryRepo = inventoryRepo;
+        this.inputInvoiceDetailRepo = inputInvoiceDetailRepo;
+    }
     @Override
     public MessageResponse addCategory(CategoryDTO categoryDTO) {
         for(Category category: categoryRepo.findAll()){

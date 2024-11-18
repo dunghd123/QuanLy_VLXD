@@ -3,10 +3,9 @@ package com.example.quanly_vlxd.entity;
 import com.example.quanly_vlxd.enums.InvoiceTypeEnums;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+
+import java.util.Date;
 
 @Entity
 @Table(name = "product_price_history")
@@ -14,17 +13,18 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class ProductPriceHistory {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "pph_id")
     private int Id;
     @Column(name = "pph_price")
-    private int Price;
+    private double Price;
     @Column(name = "pph_startdate")
-    private String StartDate;
+    private Date StartDate;
     @Column(name = "pph_enddate")
-    private String EndDate;
+    private Date EndDate;
     @Column(name = "pph_invoice_type")
     @Enumerated(EnumType.STRING)
     private InvoiceTypeEnums InvoiceType;

@@ -1,8 +1,6 @@
 package com.example.quanly_vlxd.service.impl;
-
 import com.example.quanly_vlxd.dto.CustomerDTO;
 import com.example.quanly_vlxd.dto.response.MessageResponse;
-import com.example.quanly_vlxd.entity.Category;
 import com.example.quanly_vlxd.entity.Customer;
 import com.example.quanly_vlxd.entity.OutputInvoice;
 import com.example.quanly_vlxd.entity.OutputInvoiceDetail;
@@ -12,24 +10,29 @@ import com.example.quanly_vlxd.repo.OutputInvoiceRepo;
 import com.example.quanly_vlxd.service.CustomerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 @Service
 public class CustomerServiceImpl implements CustomerService {
 
+
+    private final CustomerRepo customerRepo;
+
+    private final OutputInvoiceDetailRepo outputInvoiceDetailRepo;
+
+    private final OutputInvoiceRepo outputInvoiceRepo;
+
     @Autowired
-    private CustomerRepo customerRepo;
-    @Autowired
-    private OutputInvoiceDetailRepo outputInvoiceDetailRepo;
-    @Autowired
-    private OutputInvoiceRepo outputInvoiceRepo;
+    public CustomerServiceImpl(CustomerRepo customerRepo, OutputInvoiceDetailRepo outputInvoiceDetailRepo, OutputInvoiceRepo outputInvoiceRepo) {
+        this.customerRepo = customerRepo;
+        this.outputInvoiceDetailRepo = outputInvoiceDetailRepo;
+        this.outputInvoiceRepo = outputInvoiceRepo;
+    }
     @Override
     public MessageResponse addCustomer(CustomerDTO customerDTO) {
         for (Customer customer : customerRepo.findAll()) {

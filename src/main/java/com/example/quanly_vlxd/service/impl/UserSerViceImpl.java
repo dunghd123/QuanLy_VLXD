@@ -68,6 +68,9 @@ public class UserSerViceImpl implements UserService {
                 return MessageResponse.builder().message("User name already exists!!").build();
             }
         }
+        if(findbyRole.isEmpty()){
+            return MessageResponse.builder().message("Role does not exist!!").build();
+        }
         User user= User
                 .builder()
                 .UserName(addUserRequest.getUsername())
