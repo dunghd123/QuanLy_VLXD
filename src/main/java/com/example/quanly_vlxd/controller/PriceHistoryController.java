@@ -2,7 +2,7 @@ package com.example.quanly_vlxd.controller;
 
 import com.example.quanly_vlxd.dto.request.PriceHistoryRequest;
 import com.example.quanly_vlxd.dto.response.MessageResponse;
-import com.example.quanly_vlxd.entity.ProductPriceHistory;
+import com.example.quanly_vlxd.dto.response.PriceHistoryResponse;
 import com.example.quanly_vlxd.service.impl.PriceHistoryServiceImpl;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +29,7 @@ public class PriceHistoryController {
     }
 
     @GetMapping("getAll")
-    public Page<ProductPriceHistory> getAll(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
+    public Page<PriceHistoryResponse> getAll(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
         return priceHistoryService.getAll(page, size);
     }
     @ResponseStatus(HttpStatus.BAD_REQUEST) // Trả về mã 400 BAD_REQUEST
