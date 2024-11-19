@@ -1,4 +1,4 @@
-package com.example.quanly_vlxd.dto;
+package com.example.quanly_vlxd.dto.request;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,7 +9,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class CategoryDTO {
+public class CategoryRequest {
     @NotBlank(message = "ID is required")
     private String Id;
     @NotBlank(message = "Name is required")

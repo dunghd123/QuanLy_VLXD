@@ -1,6 +1,6 @@
 package com.example.quanly_vlxd.service.impl;
 
-import com.example.quanly_vlxd.dto.PriceHistoryDTO;
+import com.example.quanly_vlxd.dto.request.PriceHistoryRequest;
 import com.example.quanly_vlxd.dto.response.MessageResponse;
 import com.example.quanly_vlxd.entity.Product;
 import com.example.quanly_vlxd.entity.ProductPriceHistory;
@@ -24,28 +24,28 @@ public class PriceHistoryServiceImpl implements PriceHistoryService {
     private ProductRepo productRepo;
 
     @Override
-    public MessageResponse addPrice(PriceHistoryDTO priceHistoryDTO) {
-        Optional<Product> product = productRepo.findById(priceHistoryDTO.getProductId());
+    public MessageResponse addPrice(PriceHistoryRequest priceHistoryRequest) {
+        Optional<Product> product = productRepo.findById(priceHistoryRequest.getProductId());
         if(product.isEmpty()){
-            return MessageResponse.builder().message("Product ID: "+priceHistoryDTO.getProductId()+" is not exist").build();
+            return MessageResponse.builder().message("Product ID: "+ priceHistoryRequest.getProductId()+" is not exist").build();
         }
 
-        Optional<ProductPriceHistory> activePrice = priceHistoryRepo.findActivePriceByProductId(priceHistoryDTO.getProductId(),priceHistoryDTO.getInvoiceType());
+        Optional<ProductPriceHistory> activePrice = priceHistoryRepo.findActivePriceByProductId(priceHistoryRequest.getProductId(), priceHistoryRequest.getInvoiceType());
         if(activePrice.isPresent()){
-            if(priceHistoryDTO.getStartDate().before(activePrice.get().getStartDate())){
+            if(priceHistoryRequest.getStartDate().before(activePrice.get().getStartDate())){
                 return MessageResponse.builder().message("Start date must be after current active price").build();
             }
             ProductPriceHistory currentActive = activePrice.get();
-            currentActive.setEndDate(priceHistoryDTO.getStartDate());
+            currentActive.setEndDate(priceHistoryRequest.getStartDate());
             currentActive.setIsActive(false);
             priceHistoryRepo.save(currentActive);
         }
         ProductPriceHistory newPrice =
                 ProductPriceHistory.builder()
                         .product(product.get())
-                        .Price(priceHistoryDTO.getPrice())
-                        .InvoiceType(InvoiceTypeEnums.valueOf(priceHistoryDTO.getInvoiceType()))
-                        .StartDate(priceHistoryDTO.getStartDate())
+                        .Price(priceHistoryRequest.getPrice())
+                        .InvoiceType(InvoiceTypeEnums.valueOf(priceHistoryRequest.getInvoiceType()))
+                        .StartDate(priceHistoryRequest.getStartDate())
                         .EndDate(null)
                         .IsActive(true)
                         .build();

@@ -1,6 +1,6 @@
 package com.example.quanly_vlxd.service.impl;
 
-import com.example.quanly_vlxd.dto.CategoryDTO;
+import com.example.quanly_vlxd.dto.request.CategoryRequest;
 import com.example.quanly_vlxd.dto.response.MessageResponse;
 import com.example.quanly_vlxd.entity.*;
 import com.example.quanly_vlxd.repo.CategoryRepo;
@@ -32,15 +32,15 @@ public class CategoryServiceImpl implements CategoryService {
         this.inputInvoiceDetailRepo = inputInvoiceDetailRepo;
     }
     @Override
-    public MessageResponse addCategory(CategoryDTO categoryDTO) {
+    public MessageResponse addCategory(CategoryRequest categoryRequest) {
         for(Category category: categoryRepo.findAll()){
-            if(category.getName().equals(categoryDTO.getName())){
+            if(category.getName().equals(categoryRequest.getName())){
                 return MessageResponse.builder().message("Category name already exist!!!").build();
             }
         }
         Category newCate= Category.builder()
-                .Name(categoryDTO.getName())
-                .Description(categoryDTO.getDescription())
+                .Name(categoryRequest.getName())
+                .Description(categoryRequest.getDescription())
                 .IsActive(true)
                 .build();
         categoryRepo.save(newCate);
@@ -48,14 +48,14 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public MessageResponse updateCategory(int id, CategoryDTO categoryDTO) {
+    public MessageResponse updateCategory(int id, CategoryRequest categoryRequest) {
         Optional<Category> category= categoryRepo.findById(id);
         if(category.isEmpty()){
             return MessageResponse.builder().message("ID: "+id+ " is not exist").build();
         }
         Category curCategory= category.get();
-        curCategory.setName(categoryDTO.getName());
-        curCategory.setDescription(categoryDTO.getDescription());
+        curCategory.setName(categoryRequest.getName());
+        curCategory.setDescription(categoryRequest.getDescription());
         categoryRepo.save(curCategory);
         return MessageResponse.builder().message("Update information successfully!!!").build();
     }

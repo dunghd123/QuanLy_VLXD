@@ -1,4 +1,4 @@
-package com.example.quanly_vlxd.dto;
+package com.example.quanly_vlxd.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.DecimalMin;
@@ -14,7 +14,7 @@ import java.util.Date;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class PriceHistoryDTO {
+public class PriceHistoryRequest {
     @NotNull(message = "Product ID cannot be null")
     private Integer productId;
 

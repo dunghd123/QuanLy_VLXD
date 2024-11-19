@@ -1,5 +1,5 @@
 package com.example.quanly_vlxd.service.impl;
-import com.example.quanly_vlxd.dto.CustomerDTO;
+import com.example.quanly_vlxd.dto.request.CustomerRequest;
 import com.example.quanly_vlxd.dto.response.MessageResponse;
 import com.example.quanly_vlxd.entity.Customer;
 import com.example.quanly_vlxd.entity.OutputInvoice;
@@ -34,19 +34,16 @@ public class CustomerServiceImpl implements CustomerService {
         this.outputInvoiceRepo = outputInvoiceRepo;
     }
     @Override
-    public MessageResponse addCustomer(CustomerDTO customerDTO) {
+    public MessageResponse addCustomer(CustomerRequest customerRequest) {
         for (Customer customer : customerRepo.findAll()) {
-            if (customer.getName().equals(customerDTO.getName())) {
-                return MessageResponse.builder().message("Customer name already exist!!!").build();
-            }
-            if (customer.getPhoneNum().equals(customerDTO.getPhoneNum())) {
+            if (customer.getPhoneNum().equals(customerRequest.getPhoneNum())) {
                 return MessageResponse.builder().message("Customer phone number already exist!!!").build();
             }
         }
         Customer newCus = Customer.builder()
-                .Name(customerDTO.getName())
-                .Address(customerDTO.getAddress())
-                .PhoneNum(customerDTO.getPhoneNum())
+                .Name(customerRequest.getName())
+                .Address(customerRequest.getAddress())
+                .PhoneNum(customerRequest.getPhoneNum())
                 .IsActive(true)
                 .build();
         customerRepo.save(newCus);
@@ -54,7 +51,7 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
-    public MessageResponse updateCustomer(int id, CustomerDTO customerDTO) {
+    public MessageResponse updateCustomer(int id, CustomerRequest customerRequest) {
         Optional<Customer> customer = customerRepo.findById(id);
         if (customer.isEmpty()) {
             return MessageResponse.builder().message("ID: " + id + " is not exist").build();
@@ -62,17 +59,14 @@ public class CustomerServiceImpl implements CustomerService {
         List<Customer> customers = customerRepo.findAll();
         customers.removeIf(c -> c.getId() == id);
         for(Customer customer1: customers){
-            if(customer1.getName().equals(customerDTO.getName())){
-                return MessageResponse.builder().message("Customer name already exist!!!").build();
-            }
-            if(customer1.getPhoneNum().equals(customerDTO.getPhoneNum())){
+            if(customer1.getPhoneNum().equals(customerRequest.getPhoneNum())){
                 return MessageResponse.builder().message("Customer phone number already exist!!!").build();
             }
         }
         Customer cusCur = customer.get();
-        cusCur.setName(customerDTO.getName());
-        cusCur.setAddress(customerDTO.getAddress());
-        cusCur.setPhoneNum(customerDTO.getPhoneNum());
+        cusCur.setName(customerRequest.getName());
+        cusCur.setAddress(customerRequest.getAddress());
+        cusCur.setPhoneNum(customerRequest.getPhoneNum());
         customerRepo.save(cusCur);
         return MessageResponse.builder().message("Update information successfully!!!").build();
     }

@@ -1,8 +1,7 @@
-package com.example.quanly_vlxd.dto;
+package com.example.quanly_vlxd.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,7 +11,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class CustomerDTO {
+public class CustomerRequest {
 
     @NotBlank(message = "Customer name is required")
     private String name;

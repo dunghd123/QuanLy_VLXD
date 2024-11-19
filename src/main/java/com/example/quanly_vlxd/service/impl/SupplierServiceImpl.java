@@ -1,6 +1,6 @@
 package com.example.quanly_vlxd.service.impl;
 
-import com.example.quanly_vlxd.dto.SupplierDTO;
+import com.example.quanly_vlxd.dto.request.SupplierRequest;
 import com.example.quanly_vlxd.dto.response.MessageResponse;
 import com.example.quanly_vlxd.entity.InputInvoice;
 import com.example.quanly_vlxd.entity.InputInvoiceDetail;
@@ -30,20 +30,20 @@ public class SupplierServiceImpl implements SupplierService {
     private final InputInvoiceDetailRepo inputInvoiceDetailRepo;
 
     @Override
-    public MessageResponse addSupplier(SupplierDTO supplierDTO) {
+    public MessageResponse addSupplier(SupplierRequest supplierRequest) {
         for(Supplier supplier: supplierRepo.findAll()){
-            if(supplier.getName().equals(supplierDTO.getName())
-                && supplier.getAddress().equals(supplierDTO.getAddress())){
+            if(supplier.getName().equals(supplierRequest.getName())
+                && supplier.getAddress().equals(supplierRequest.getAddress())){
                 return MessageResponse.builder().message("Supplier has existed!!!").build();
             }
-            if(supplier.getPhoneNum().equals(supplierDTO.getPhoneNum())){
+            if(supplier.getPhoneNum().equals(supplierRequest.getPhoneNum())){
                 return MessageResponse.builder().message("Phone number has existed!!!").build();
             }
         }
         Supplier newSup= Supplier.builder()
-                .Name(supplierDTO.getName())
-                .Address(supplierDTO.getAddress())
-                .PhoneNum(supplierDTO.getPhoneNum())
+                .Name(supplierRequest.getName())
+                .Address(supplierRequest.getAddress())
+                .PhoneNum(supplierRequest.getPhoneNum())
                 .IsActive(true)
                 .build();
         supplierRepo.save(newSup);
@@ -51,7 +51,7 @@ public class SupplierServiceImpl implements SupplierService {
     }
 
     @Override
-    public MessageResponse updateSupplier(int id,SupplierDTO supplierDTO) {
+    public MessageResponse updateSupplier(int id, SupplierRequest supplierRequest) {
         Optional<Supplier> supplier= supplierRepo.findById(id);
         if(supplier.isEmpty()){
             return MessageResponse.builder().message("ID: "+id+ " is not exist").build();
@@ -59,18 +59,18 @@ public class SupplierServiceImpl implements SupplierService {
         List<Supplier> list= new ArrayList<>(supplierRepo.findAll());
         list.removeIf(s->s.getId()==id);
         for(Supplier s: list){
-            if(s.getName().equals(supplierDTO.getName())
-                    && s.getAddress().equals(supplierDTO.getAddress())){
+            if(s.getName().equals(supplierRequest.getName())
+                    && s.getAddress().equals(supplierRequest.getAddress())){
                 return MessageResponse.builder().message("Supplier has existed!!!").build();
             }
-            if(s.getPhoneNum().equals(supplierDTO.getPhoneNum())){
+            if(s.getPhoneNum().equals(supplierRequest.getPhoneNum())){
                 return MessageResponse.builder().message("Phone number has existed!!!").build();
             }
         }
         Supplier supCur= supplier.get();
-        supCur.setName(supplierDTO.getName());
-        supCur.setAddress(supplierDTO.getAddress());
-        supCur.setPhoneNum(supplierDTO.getPhoneNum());
+        supCur.setName(supplierRequest.getName());
+        supCur.setAddress(supplierRequest.getAddress());
+        supCur.setPhoneNum(supplierRequest.getPhoneNum());
         supplierRepo.save(supCur);
         return MessageResponse.builder().message("Update information successfully!!!").build();
     }

@@ -1,6 +1,6 @@
 package com.example.quanly_vlxd.controller;
 
-import com.example.quanly_vlxd.dto.CategoryDTO;
+import com.example.quanly_vlxd.dto.request.CategoryRequest;
 import com.example.quanly_vlxd.dto.response.MessageResponse;
 import com.example.quanly_vlxd.entity.Category;
 import com.example.quanly_vlxd.service.impl.CategoryServiceImpl;
@@ -24,12 +24,12 @@ public class CategoryController {
     @Autowired
     private CategoryServiceImpl categoryService;
     @PostMapping("add-category")
-    public ResponseEntity<MessageResponse> addNewCategory(@Valid @RequestBody CategoryDTO categoryDTO){
-        return new ResponseEntity<>(categoryService.addCategory(categoryDTO), HttpStatus.CREATED);
+    public ResponseEntity<MessageResponse> addNewCategory(@Valid @RequestBody CategoryRequest categoryRequest){
+        return new ResponseEntity<>(categoryService.addCategory(categoryRequest), HttpStatus.CREATED);
     }
     @PutMapping("update-category")
-    public ResponseEntity<MessageResponse> updateCategory(@RequestParam int id,@Valid @RequestBody CategoryDTO categoryDTO){
-        return new ResponseEntity<>(categoryService.updateCategory(id,categoryDTO), HttpStatus.OK);
+    public ResponseEntity<MessageResponse> updateCategory(@RequestParam int id,@Valid @RequestBody CategoryRequest categoryRequest){
+        return new ResponseEntity<>(categoryService.updateCategory(id, categoryRequest), HttpStatus.OK);
     }
     @DeleteMapping("delete-category")
     public ResponseEntity<MessageResponse> deleteCategory(@RequestParam int id){

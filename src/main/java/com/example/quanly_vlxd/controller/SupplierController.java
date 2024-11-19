@@ -1,6 +1,6 @@
 package com.example.quanly_vlxd.controller;
 
-import com.example.quanly_vlxd.dto.SupplierDTO;
+import com.example.quanly_vlxd.dto.request.SupplierRequest;
 import com.example.quanly_vlxd.dto.response.MessageResponse;
 import com.example.quanly_vlxd.entity.Supplier;
 import com.example.quanly_vlxd.service.impl.SupplierServiceImpl;
@@ -10,12 +10,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import static com.example.quanly_vlxd.help.MapErrors.getMapErrors;
@@ -27,12 +24,12 @@ public class SupplierController {
     @Autowired
     private SupplierServiceImpl supplierService;
     @PostMapping("add-supplier")
-    public ResponseEntity<MessageResponse> addNewSupplier(@Valid @RequestBody SupplierDTO supplierDTO){
-        return new ResponseEntity<>(supplierService.addSupplier(supplierDTO), HttpStatus.CREATED);
+    public ResponseEntity<MessageResponse> addNewSupplier(@Valid @RequestBody SupplierRequest supplierRequest){
+        return new ResponseEntity<>(supplierService.addSupplier(supplierRequest), HttpStatus.CREATED);
     }
     @PutMapping("update-supplier")
-    public ResponseEntity<MessageResponse> updateSupplier(@RequestParam int id,@Valid @RequestBody SupplierDTO supplierDTO){
-        return new ResponseEntity<>(supplierService.updateSupplier(id,supplierDTO), HttpStatus.OK);
+    public ResponseEntity<MessageResponse> updateSupplier(@RequestParam int id,@Valid @RequestBody SupplierRequest supplierRequest){
+        return new ResponseEntity<>(supplierService.updateSupplier(id, supplierRequest), HttpStatus.OK);
     }
     @DeleteMapping("delete-supplier")
     public ResponseEntity<MessageResponse> deleteSupplier(@RequestParam int id){

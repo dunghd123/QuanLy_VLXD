@@ -1,4 +1,4 @@
-package com.example.quanly_vlxd.dto;
+package com.example.quanly_vlxd.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -8,7 +8,7 @@ import lombok.*;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class SupplierDTO {
+public class SupplierRequest {
 
     @NotBlank(message = "Name cannot be empty")
     @Size(max = 100, message = "Name should not exceed 100 characters")

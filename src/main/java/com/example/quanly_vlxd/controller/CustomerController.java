@@ -1,6 +1,6 @@
 package com.example.quanly_vlxd.controller;
 
-import com.example.quanly_vlxd.dto.CustomerDTO;
+import com.example.quanly_vlxd.dto.request.CustomerRequest;
 import com.example.quanly_vlxd.dto.response.MessageResponse;
 import com.example.quanly_vlxd.entity.Customer;
 import com.example.quanly_vlxd.service.impl.CustomerServiceImpl;
@@ -23,12 +23,12 @@ public class CustomerController {
     private CustomerServiceImpl customerServiceImpl;
 
     @PostMapping("add-new-customer")
-    public ResponseEntity<MessageResponse> addNewCustomer(@Valid @RequestBody CustomerDTO customerDTO){
-        return new ResponseEntity<>(customerServiceImpl.addCustomer(customerDTO), HttpStatus.CREATED);
+    public ResponseEntity<MessageResponse> addNewCustomer(@Valid @RequestBody CustomerRequest customerRequest){
+        return new ResponseEntity<>(customerServiceImpl.addCustomer(customerRequest), HttpStatus.CREATED);
     }
     @PutMapping("update-customer/{id}")
-    public ResponseEntity<MessageResponse> updateCustomer(@PathVariable(value = "id") int id,@Valid @RequestBody CustomerDTO customerDTO){
-        return new ResponseEntity<>(customerServiceImpl.updateCustomer(id, customerDTO), HttpStatus.OK);
+    public ResponseEntity<MessageResponse> updateCustomer(@PathVariable(value = "id") int id,@Valid @RequestBody CustomerRequest customerRequest){
+        return new ResponseEntity<>(customerServiceImpl.updateCustomer(id, customerRequest), HttpStatus.OK);
     }
     @DeleteMapping("delete-customer/{id}")
     public ResponseEntity<MessageResponse> deleteCustomer(@PathVariable(value = "id") int id){

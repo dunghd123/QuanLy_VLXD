@@ -1,6 +1,6 @@
 package com.example.quanly_vlxd.controller;
 
-import com.example.quanly_vlxd.dto.PriceHistoryDTO;
+import com.example.quanly_vlxd.dto.request.PriceHistoryRequest;
 import com.example.quanly_vlxd.dto.response.MessageResponse;
 import com.example.quanly_vlxd.entity.ProductPriceHistory;
 import com.example.quanly_vlxd.service.impl.PriceHistoryServiceImpl;
@@ -24,8 +24,8 @@ public class PriceHistoryController {
 
 
     @PostMapping("create-price-history")
-    public ResponseEntity<MessageResponse> createPriceHistory(@Valid @RequestBody PriceHistoryDTO priceHistoryDTO) {
-        return new ResponseEntity<>(priceHistoryService.addPrice(priceHistoryDTO), HttpStatus.CREATED);
+    public ResponseEntity<MessageResponse> createPriceHistory(@Valid @RequestBody PriceHistoryRequest priceHistoryRequest) {
+        return new ResponseEntity<>(priceHistoryService.addPrice(priceHistoryRequest), HttpStatus.CREATED);
     }
 
     @GetMapping("getAll")
