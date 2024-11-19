@@ -1,5 +1,6 @@
 package com.example.quanly_vlxd.service.impl;
 import com.example.quanly_vlxd.dto.request.CustomerRequest;
+import com.example.quanly_vlxd.dto.response.CusResponse;
 import com.example.quanly_vlxd.dto.response.MessageResponse;
 import com.example.quanly_vlxd.entity.Customer;
 import com.example.quanly_vlxd.entity.OutputInvoice;
@@ -94,8 +95,17 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
-    public Page<Customer> getAllCustomer(int page, int size) {
+    public Page<CusResponse> getAllCustomer(int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
-        return customerRepo.getCustomer(pageable);
+        return customerRepo.getAll(pageable).map(this::convertToDTO);
+    }
+    private CusResponse convertToDTO(Customer customer) {
+        return CusResponse.builder()
+                .id(customer.getId())
+                .name(customer.getName())
+                .address(customer.getAddress())
+                .phoneNum(customer.getPhoneNum())
+                .isActive(customer.isIsActive())
+                .build();
     }
 }

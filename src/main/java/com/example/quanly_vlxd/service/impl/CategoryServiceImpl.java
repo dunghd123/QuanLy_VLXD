@@ -1,6 +1,7 @@
 package com.example.quanly_vlxd.service.impl;
 
 import com.example.quanly_vlxd.dto.request.CategoryRequest;
+import com.example.quanly_vlxd.dto.response.CategoryResponse;
 import com.example.quanly_vlxd.dto.response.MessageResponse;
 import com.example.quanly_vlxd.entity.*;
 import com.example.quanly_vlxd.repo.CategoryRepo;
@@ -89,8 +90,16 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public Page<Category> getAll(int page, int size) {
+    public Page<CategoryResponse> getAll(int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
-        return categoryRepo.getAll(pageable);
+        return categoryRepo.getAll(pageable).map(this::convertToDTO);
+    }
+    private CategoryResponse convertToDTO(Category category){
+        return CategoryResponse.builder()
+                .id(category.getId())
+                .name(category.getName())
+                .description(category.getDescription())
+                .isActive(category.isIsActive())
+                .build();
     }
 }

@@ -2,6 +2,7 @@ package com.example.quanly_vlxd.service.impl;
 
 import com.example.quanly_vlxd.dto.request.SupplierRequest;
 import com.example.quanly_vlxd.dto.response.MessageResponse;
+import com.example.quanly_vlxd.dto.response.SupplierResponse;
 import com.example.quanly_vlxd.entity.InputInvoice;
 import com.example.quanly_vlxd.entity.InputInvoiceDetail;
 import com.example.quanly_vlxd.entity.Supplier;
@@ -98,8 +99,17 @@ public class SupplierServiceImpl implements SupplierService {
     }
 
     @Override
-    public Page<Supplier> getList(int page, int size) {
+    public Page<SupplierResponse> getList(int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
-        return  supplierRepo.getAll(pageable);
+        return  supplierRepo.getAll(pageable).map(this::convertToDTO);
+    }
+    private SupplierResponse convertToDTO(Supplier supplier){
+        return SupplierResponse.builder()
+                .id(supplier.getId())
+                .name(supplier.getName())
+                .address(supplier.getAddress())
+                .phoneNum(supplier.getPhoneNum())
+                .isActive(supplier.isIsActive())
+                .build();
     }
 }

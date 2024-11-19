@@ -144,6 +144,5 @@ public class EmployeeServiceImpl implements EmployeeService {
                 .isActive(employee.isIsActive())
                 .build();
     }
-
 }
 

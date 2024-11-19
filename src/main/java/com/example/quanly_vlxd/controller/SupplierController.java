@@ -2,9 +2,8 @@ package com.example.quanly_vlxd.controller;
 
 import com.example.quanly_vlxd.dto.request.SupplierRequest;
 import com.example.quanly_vlxd.dto.response.MessageResponse;
-import com.example.quanly_vlxd.entity.Supplier;
+import com.example.quanly_vlxd.dto.response.SupplierResponse;
 import com.example.quanly_vlxd.service.impl.SupplierServiceImpl;
-
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -36,7 +35,7 @@ public class SupplierController {
         return new ResponseEntity<>(supplierService.deleteSuppler(id), HttpStatus.OK);
     }
     @GetMapping("getAll")
-    public Page<Supplier> getAll(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size){
+    public Page<SupplierResponse> getAll(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size){
         return supplierService.getList(page,size);
     }
 

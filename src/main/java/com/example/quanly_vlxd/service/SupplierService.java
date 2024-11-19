@@ -2,7 +2,7 @@ package com.example.quanly_vlxd.service;
 
 import com.example.quanly_vlxd.dto.request.SupplierRequest;
 import com.example.quanly_vlxd.dto.response.MessageResponse;
-import com.example.quanly_vlxd.entity.Supplier;
+import com.example.quanly_vlxd.dto.response.SupplierResponse;
 import org.springframework.data.domain.Page;
 
 public interface SupplierService {
@@ -10,6 +10,6 @@ public interface SupplierService {
     MessageResponse updateSupplier(int id, SupplierRequest supplierRequest);
     MessageResponse deleteSuppler(int id);
 
-    Page<Supplier> getList(int page, int size);
+    Page<SupplierResponse> getList(int page, int size);
 
 }

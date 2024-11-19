@@ -1,8 +1,8 @@
 package com.example.quanly_vlxd.controller;
 
 import com.example.quanly_vlxd.dto.request.CustomerRequest;
+import com.example.quanly_vlxd.dto.response.CusResponse;
 import com.example.quanly_vlxd.dto.response.MessageResponse;
-import com.example.quanly_vlxd.entity.Customer;
 import com.example.quanly_vlxd.service.impl.CustomerServiceImpl;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,7 +35,7 @@ public class CustomerController {
         return new ResponseEntity<>(customerServiceImpl.deleteCustomer(id), HttpStatus.OK);
     }
     @GetMapping("getAllCustomer")
-    public Page<Customer> getAll(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size){
+    public Page<CusResponse> getAll(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size){
         return customerServiceImpl.getAllCustomer(page,size);
     }
     @ResponseStatus(HttpStatus.BAD_REQUEST) // Trả về mã 400 BAD_REQUEST

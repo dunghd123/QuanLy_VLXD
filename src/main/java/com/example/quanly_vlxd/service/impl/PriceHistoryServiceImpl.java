@@ -2,6 +2,7 @@ package com.example.quanly_vlxd.service.impl;
 
 import com.example.quanly_vlxd.dto.request.PriceHistoryRequest;
 import com.example.quanly_vlxd.dto.response.MessageResponse;
+import com.example.quanly_vlxd.dto.response.PriceHistoryResponse;
 import com.example.quanly_vlxd.entity.Product;
 import com.example.quanly_vlxd.entity.ProductPriceHistory;
 import com.example.quanly_vlxd.enums.InvoiceTypeEnums;
@@ -56,8 +57,19 @@ public class PriceHistoryServiceImpl implements PriceHistoryService {
 
 
     @Override
-    public Page<ProductPriceHistory> getAll(int page, int size) {
+    public Page<PriceHistoryResponse> getAll(int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
-        return priceHistoryRepo.getAll(pageable);
+        return priceHistoryRepo.getAll(pageable).map(this::convertToDTO);
+    }
+    private PriceHistoryResponse convertToDTO(ProductPriceHistory productPriceHistory){
+        return PriceHistoryResponse.builder()
+                .id(productPriceHistory.getId())
+                .productName(productPriceHistory.getProduct().getName())
+                .invoiceType(productPriceHistory.getInvoiceType().name())
+                .price(productPriceHistory.getPrice())
+                .startDate(productPriceHistory.getStartDate())
+                .endDate(productPriceHistory.getEndDate())
+                .isActive(productPriceHistory.isIsActive())
+                .build();
     }
 }
