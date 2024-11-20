@@ -6,7 +6,7 @@ import com.example.quanly_vlxd.dto.response.MessageResponse;
 import com.example.quanly_vlxd.entity.*;
 import com.example.quanly_vlxd.repo.CategoryRepo;
 import com.example.quanly_vlxd.repo.InputInvoiceDetailRepo;
-import com.example.quanly_vlxd.repo.InventoryRepo;
+import com.example.quanly_vlxd.repo.WarehouseProductRepo;
 import com.example.quanly_vlxd.repo.ProductRepo;
 import com.example.quanly_vlxd.service.CategoryService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,14 +22,14 @@ import java.util.Optional;
 public class CategoryServiceImpl implements CategoryService {
     private final CategoryRepo categoryRepo;
     private final ProductRepo productRepo;
-    private final InventoryRepo inventoryRepo;
+    private final WarehouseProductRepo warehouseProductRepo;
     private final InputInvoiceDetailRepo inputInvoiceDetailRepo;
 
     @Autowired
-    public CategoryServiceImpl(CategoryRepo categoryRepo, ProductRepo productRepo, InventoryRepo inventoryRepo, InputInvoiceDetailRepo inputInvoiceDetailRepo) {
+    public CategoryServiceImpl(CategoryRepo categoryRepo, ProductRepo productRepo, WarehouseProductRepo warehouseProductRepo, InputInvoiceDetailRepo inputInvoiceDetailRepo) {
         this.categoryRepo = categoryRepo;
         this.productRepo = productRepo;
-        this.inventoryRepo = inventoryRepo;
+        this.warehouseProductRepo = warehouseProductRepo;
         this.inputInvoiceDetailRepo = inputInvoiceDetailRepo;
     }
     @Override
@@ -74,10 +74,10 @@ public class CategoryServiceImpl implements CategoryService {
                         inputInvoiceDetailRepo.deleteById(ip.getId());
                     }
                 }
-                for(WareHouse_Product inv: inventoryRepo.findAll()){
+                for(WareHouse_Product inv: warehouseProductRepo.findAll()){
                     if(inv.getProduct().getId()== pr.getId()){
                         inv.setIsActive(false);
-                        inventoryRepo.save(inv);
+                        warehouseProductRepo.save(inv);
                     }
                 }
                 pr.setIsActive(false);
