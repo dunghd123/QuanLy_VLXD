@@ -22,9 +22,6 @@ public class ProductRequest {
     @NotNull(message = "Category ID cannot be null")
     private Integer categoryId;
 
-    @NotNull(message = "IsActive status cannot be null")
-    private Boolean isActive;
-
     @Size(max = 500, message = "Description must not exceed 500 characters")
     private String description;
 }

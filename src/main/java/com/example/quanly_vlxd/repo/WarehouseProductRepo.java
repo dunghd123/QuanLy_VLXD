@@ -5,5 +5,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface InventoryRepo extends JpaRepository<WareHouse_Product,Integer> {
+public interface WarehouseProductRepo extends JpaRepository<WareHouse_Product,Integer> {
 }

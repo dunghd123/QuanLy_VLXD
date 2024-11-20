@@ -3,7 +3,7 @@ package com.example.quanly_vlxd.service;
 import com.example.quanly_vlxd.dto.request.ProductRequest;
 import com.example.quanly_vlxd.dto.response.MessageResponse;
 import com.example.quanly_vlxd.dto.response.ProductResponse;
-import com.example.quanly_vlxd.entity.Product;
+
 import org.springframework.data.domain.Page;
 
 public interface ProductService {
@@ -11,4 +11,5 @@ public interface ProductService {
     MessageResponse updateProduct(int id, ProductRequest productRequest);
     MessageResponse deleteProduct(int id);
     Page<ProductResponse> getAllProducts(int page, int size);
+
 }
