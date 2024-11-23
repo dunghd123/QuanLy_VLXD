@@ -3,10 +3,7 @@ package com.example.quanly_vlxd.entity;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.Date;
 import java.util.Set;
@@ -16,6 +13,7 @@ import java.util.Set;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 @Table(name = "input_invoices")
 public class InputInvoice {
     @Id
@@ -33,6 +31,9 @@ public class InputInvoice {
 
     @Column(name = "inp_status")
     private boolean Status;
+
+    @Column(name = "inp_total_amount")
+    private double TotalAmount;
 
     @Column(name = "isactive")
     private boolean IsActive;

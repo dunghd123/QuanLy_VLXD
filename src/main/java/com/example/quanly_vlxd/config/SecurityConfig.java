@@ -45,6 +45,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/employee/**").hasAnyAuthority(RoleEnums.MANAGER.name())
                         .requestMatchers("/api/v1/category/**").hasAnyAuthority(RoleEnums.MANAGER.name())
                         .requestMatchers("/api/v1/warehouse/**").hasAnyAuthority(RoleEnums.MANAGER.name())
+                        .requestMatchers(("/api/v1/input-invoice/**")).hasAnyAuthority(RoleEnums.EMPLOYEE.name(),RoleEnums.MANAGER.name())
+                        .requestMatchers("/api/v1/wh-pro-service/**").hasAnyAuthority(RoleEnums.MANAGER.name())
                         .anyRequest().authenticated())
                 .userDetailsService(userDetailService)
                 .sessionManagement(session-> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

@@ -3,10 +3,7 @@ package com.example.quanly_vlxd.entity;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.Date;
 
@@ -15,6 +12,7 @@ import java.util.Date;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 @Table(name = "warehouse_products")
 public class WareHouse_Product {
     @Id
@@ -23,7 +21,7 @@ public class WareHouse_Product {
     private int Id;
     @Column(name = "wp_quantity",nullable = false)
     private int Quantity;
-    @Column(name = "wp_last_updated",nullable = false)
+    @Column(name = "wp_last_updated")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone = "GMT+7")
     private Date LastUpdated;
 

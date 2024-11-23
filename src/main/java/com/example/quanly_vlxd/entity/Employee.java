@@ -1,12 +1,11 @@
 package com.example.quanly_vlxd.entity;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.format.annotation.DateTimeFormat;
 
-import java.util.Date;
+import java.sql.Date;
 import java.util.Set;
 
 @Entity
@@ -29,7 +28,7 @@ public class Employee {
     private String Gender;
 
     @Column(name = "emp_dob",nullable = false)
-    @JsonFormat(pattern = "dd-MM-yyyy",shape = JsonFormat.Shape.STRING,timezone = "GMT+7")
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     private Date Dob;
 
     @Column(name = "emp_address",nullable = false)

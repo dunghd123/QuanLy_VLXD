@@ -2,10 +2,7 @@ package com.example.quanly_vlxd.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @Entity
 @Getter
@@ -13,6 +10,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "input_invoice_details")
+@Builder
 public class InputInvoiceDetail {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

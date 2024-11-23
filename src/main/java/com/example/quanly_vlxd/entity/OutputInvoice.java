@@ -39,6 +39,9 @@ public class OutputInvoice {
     @Column(name = "oi_status")
     private boolean Status;
 
+    @Column(name = "oi_total_amount")
+    private double TotalAmount;
+
     @Column(name = "isactive")
     private boolean IsActive;
 

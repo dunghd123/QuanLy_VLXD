@@ -1,13 +1,10 @@
 package com.example.quanly_vlxd.dto.request;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.*;
-
-import java.util.Date;
 
 @Getter
 @Setter
@@ -26,10 +23,5 @@ public class PriceHistoryRequest {
     @NotNull(message = "Invoice type cannot be null")
     @Pattern(regexp = "^(INPUT|OUTPUT)$", message = "Invoice type must be either 'INPUT' or 'OUTPUT'")
     private String invoiceType;
-
-    @NotNull(message = "Start date cannot be null")
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+7")
-    private Date startDate;
-
 
 }

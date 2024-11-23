@@ -26,7 +26,7 @@ public class UserController {
     private UserSerViceImpl userSerVice;
 
     @PostMapping("login")
-    public ResponseEntity<TokenResponse> login(@RequestBody LoginRequest loginRequest){
+    public ResponseEntity<TokenResponse> login(@Valid @RequestBody LoginRequest loginRequest){
         return new ResponseEntity<>(userSerVice.login(loginRequest), HttpStatus.OK);
     }
     @PostMapping("add-new-user")
@@ -38,7 +38,7 @@ public class UserController {
         return new ResponseEntity<>(userSerVice.logout(username),HttpStatus.OK);
     }
     @PutMapping("change-password")
-    public ResponseEntity<MessageResponse> changePassword(@RequestBody ChangePasswordRequest changePasswordRequest){
+    public ResponseEntity<MessageResponse> changePassword(@Valid @RequestBody ChangePasswordRequest changePasswordRequest){
         return new ResponseEntity<>(userSerVice.changePass(changePasswordRequest),HttpStatus.OK);
     }
     @ResponseStatus(HttpStatus.BAD_REQUEST) // Trả về mã 400 BAD_REQUEST

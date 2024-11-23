@@ -15,6 +15,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.Optional;
 
 @Service
@@ -26,6 +27,7 @@ public class PriceHistoryServiceImpl implements PriceHistoryService {
 
     @Override
     public MessageResponse addPrice(PriceHistoryRequest priceHistoryRequest) {
+        Date date = new Date();
         Optional<Product> product = productRepo.findById(priceHistoryRequest.getProductId());
         if(product.isEmpty()){
             return MessageResponse.builder().message("Product ID: "+ priceHistoryRequest.getProductId()+" is not exist").build();
@@ -33,11 +35,8 @@ public class PriceHistoryServiceImpl implements PriceHistoryService {
 
         Optional<ProductPriceHistory> activePrice = priceHistoryRepo.findActivePriceByProductId(priceHistoryRequest.getProductId(), priceHistoryRequest.getInvoiceType());
         if(activePrice.isPresent()){
-            if(priceHistoryRequest.getStartDate().before(activePrice.get().getStartDate())){
-                return MessageResponse.builder().message("Start date must be after current active price").build();
-            }
             ProductPriceHistory currentActive = activePrice.get();
-            currentActive.setEndDate(priceHistoryRequest.getStartDate());
+            currentActive.setEndDate(date);
             currentActive.setIsActive(false);
             priceHistoryRepo.save(currentActive);
         }
@@ -46,15 +45,13 @@ public class PriceHistoryServiceImpl implements PriceHistoryService {
                         .product(product.get())
                         .Price(priceHistoryRequest.getPrice())
                         .InvoiceType(InvoiceTypeEnums.valueOf(priceHistoryRequest.getInvoiceType()))
-                        .StartDate(priceHistoryRequest.getStartDate())
+                        .StartDate(date)
                         .EndDate(null)
                         .IsActive(true)
                         .build();
         priceHistoryRepo.save(newPrice);
         return MessageResponse.builder().message("Create price history successfully").build();
     }
-
-
 
     @Override
     public Page<PriceHistoryResponse> getAll(int page, int size) {

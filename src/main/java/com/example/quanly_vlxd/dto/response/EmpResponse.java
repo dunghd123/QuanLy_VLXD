@@ -1,10 +1,9 @@
 package com.example.quanly_vlxd.dto.response;
 
-import com.example.quanly_vlxd.entity.Employee;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
 
-import java.util.Date;
+import java.sql.Date;
 
 @Getter
 @Setter
@@ -22,6 +21,4 @@ public class EmpResponse {
     private String description;
     private String username;
     private boolean isActive;
-
-
 }
