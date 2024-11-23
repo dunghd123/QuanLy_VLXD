@@ -2,7 +2,6 @@ package com.example.quanly_vlxd.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Min;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -35,4 +34,9 @@ public class InputInvoiceDetail {
     @JoinColumn(name = "pro_id", foreignKey = @ForeignKey(name = "FK_INPUT_INVOICE_DETAIL_PRODUCT"))
     @JsonIgnoreProperties(value = "inputInvoiceDetails")
     private Product product;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "wh_id", foreignKey = @ForeignKey(name = "FK_INPUT_INVOICE_DETAIL_WAREHOUSE"))
+    @JsonIgnoreProperties(value = "inputInvoiceDetails")
+    private Warehouse warehouse;
 }
