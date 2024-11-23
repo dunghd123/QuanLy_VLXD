@@ -3,7 +3,6 @@ package com.example.quanly_vlxd.controller;
 import com.example.quanly_vlxd.dto.request.ProductRequest;
 import com.example.quanly_vlxd.dto.response.MessageResponse;
 import com.example.quanly_vlxd.dto.response.ProductResponse;
-import com.example.quanly_vlxd.entity.Product;
 import com.example.quanly_vlxd.service.impl.ProductServiceImpl;
 
 import jakarta.validation.Valid;

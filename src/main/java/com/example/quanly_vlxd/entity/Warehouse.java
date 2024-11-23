@@ -34,4 +34,8 @@ public class Warehouse {
     @OneToMany(mappedBy = "warehouse")
     @JsonIgnoreProperties(value = "warehouse")
     private Set<OutputInvoiceDetail> outputInvoiceDetails;
+
+    @OneToMany(mappedBy = "warehouse")
+    @JsonIgnoreProperties(value = "warehouse")
+    private Set<InputInvoiceDetail> inputInvoiceDetails;
 }
