@@ -8,10 +8,5 @@ public interface InputInvoiceService {
 
     MessageResponse addInputInvoice(InputInvoiceRequest inputInvoiceRequest);
     MessageResponse updateInputInvoice(int id);
-
-    MessageResponse deleteInputInvoice(int id);
-
     InputInvoiceResponse getInputInvoice(int id);
-
-
 }

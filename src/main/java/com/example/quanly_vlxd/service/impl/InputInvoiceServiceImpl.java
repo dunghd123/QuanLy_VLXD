@@ -110,22 +110,13 @@ public class InputInvoiceServiceImpl implements InputInvoiceService  {
 
     @Override
     public MessageResponse updateInputInvoice(int id) {
-        return null;
-    }
-
-    @Override
-    public MessageResponse deleteInputInvoice(int id) {
         Optional<InputInvoice> inputInvoice = inputInvoiceRepo.findById(id);
         if(inputInvoice.isEmpty())
             return MessageResponse.builder().message("Input invoice does not exist!!").build();
-        for(InputInvoiceDetail iid: inputInvoiceDetailRepo.findAll()){
-            if(iid.getInputInvoice().getId() == id){
-                inputInvoiceDetailRepo.delete(iid);
-            }
-        }
-        inputInvoice.get().setIsActive(false);
+        inputInvoice.get().setUpdateTime(new Date());
+        inputInvoice.get().setStatus(true);
         inputInvoiceRepo.save(inputInvoice.get());
-        return null;
+        return MessageResponse.builder().message("the input invoice has been completed").build();
     }
 
     @Override
