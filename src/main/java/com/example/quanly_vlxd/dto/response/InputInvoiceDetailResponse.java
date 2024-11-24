@@ -11,7 +11,7 @@ public class InputInvoiceDetailResponse {
     private int id;
     private String productName;
     private String unitMeasure;
-    private int quantity;
+    private double quantity;
     private double price;
     private double amount;
     private String warehouseName;

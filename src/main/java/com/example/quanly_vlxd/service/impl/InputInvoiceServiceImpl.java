@@ -24,13 +24,13 @@ public class InputInvoiceServiceImpl implements InputInvoiceService  {
     private final ProductRepo ProductRepo;
     private final PriceHistoryRepo priceHistoryRepo;
     private final EmployeeRepo employeeRepo;
+    private final WarehouseProductRepo warehouseProductRepo;
 
     public double  getInputPriceByProductID(int proid, Date creationTime){
         for(ProductPriceHistory priceHistory: priceHistoryRepo.findAll()) {
             if (priceHistory.getProduct().getId() == proid
                 && priceHistory.getInvoiceType().equals(InvoiceTypeEnums.INPUT)) {
-                if (priceHistory.getStartDate().before(creationTime)
-                         && (priceHistory.getEndDate() == null || priceHistory.getEndDate().after(creationTime))) {
+                if (priceHistory.getEndDate() == null || priceHistory.getEndDate().after(creationTime)) {
                     return priceHistory.getPrice();
                 }
             }
@@ -60,15 +60,15 @@ public class InputInvoiceServiceImpl implements InputInvoiceService  {
         // convert inputInvoiceDetailRequest thành InputInvoiceDetail
         List<InputInvoiceDetail> lst= new ArrayList<>();
         for(InputInvoiceDetailRequest inputInvoiceDetailRequest: inputInvoiceRequest.getListInvoiceDetails()){
-            Optional<Product> checkProduct = ProductRepo.findById(inputInvoiceDetailRequest.getPRO_ID());
+            Optional<Product> checkProduct = ProductRepo.findById(inputInvoiceDetailRequest.getPro_id());
             if (checkProduct.isEmpty())
-                return MessageResponse.builder().message("Product ID: " + inputInvoiceDetailRequest.getPRO_ID() + " is not exist").build();
-            Optional<Warehouse> checkWH = wareHouseRepo.findById(inputInvoiceDetailRequest.getWH_ID());
+                return MessageResponse.builder().message("Product ID: " + inputInvoiceDetailRequest.getPro_id() + " is not exist").build();
+            Optional<Warehouse> checkWH = wareHouseRepo.findById(inputInvoiceDetailRequest.getWh_id());
             if (checkWH.isEmpty())
-                return MessageResponse.builder().message("Warehouse ID: " + inputInvoiceDetailRequest.getWH_ID() + " is not exist").build();
+                return MessageResponse.builder().message("Warehouse ID: " + inputInvoiceDetailRequest.getWh_id() + " is not exist").build();
 
-            int quantity= inputInvoiceDetailRequest.getQuantity();
-            double price = getInputPriceByProductID(inputInvoiceDetailRequest.getPRO_ID(), inputInvoiceRequest.getCreationTime());
+            double quantity= inputInvoiceDetailRequest.getQuantity();
+            double price = getInputPriceByProductID(inputInvoiceDetailRequest.getPro_id(), inputInvoiceRequest.getCreationTime());
             InputInvoiceDetail inputInvoiceDetail = InputInvoiceDetail.builder()
                     .inputInvoice(saveInputInvoice)
                     .product(checkProduct.get())
@@ -78,6 +78,23 @@ public class InputInvoiceServiceImpl implements InputInvoiceService  {
                     .Amount(quantity * price)
                     .build();
             lst.add(inputInvoiceDetail);
+            // Lưu vao kho
+            Optional<WareHouse_Product> warehouseProduct = warehouseProductRepo.findByWarehouseAndProduct(checkWH.get().getId(), checkProduct.get().getId());
+            if (warehouseProduct.isPresent()) {
+                warehouseProduct.get().setQuantity(warehouseProduct.get().getQuantity() + quantity);
+                warehouseProduct.get().setLastUpdated(inputInvoiceRequest.getCreationTime());
+                warehouseProduct.get().setIsActive(true);
+                warehouseProductRepo.save(warehouseProduct.get());
+            } else {
+                WareHouse_Product wp = WareHouse_Product.builder()
+                        .warehouse(checkWH.get())
+                        .product(checkProduct.get())
+                        .Quantity(quantity)
+                        .LastUpdated(inputInvoiceRequest.getCreationTime())
+                        .IsActive(true)
+                        .build();
+                warehouseProductRepo.save(wp);
+            }
         }
         inputInvoiceDetailRepo.saveAll(lst);
 

@@ -17,7 +17,7 @@ public class InputInvoiceDetail {
     @Column(name = "iid_id")
     private int Id;
     @Column(name = "iid_quantity")
-    private int Quantity;
+    private double Quantity;
     @Column(name = "iid_unit_price")
     private double UnitPrice;
     @Column(name = "iid_amount")

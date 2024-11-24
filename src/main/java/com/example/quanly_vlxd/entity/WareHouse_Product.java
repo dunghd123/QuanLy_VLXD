@@ -19,8 +19,8 @@ public class WareHouse_Product {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "wp_id")
     private int Id;
-    @Column(name = "wp_quantity",nullable = false)
-    private int Quantity;
+    @Column(name = "wp_quantity")
+    private double Quantity;
     @Column(name = "wp_last_updated")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone = "GMT+7")
     private Date LastUpdated;

@@ -21,7 +21,7 @@ public class OutputInvoiceDetail {
     @Column(name = "pro_id",nullable = false)
     private int Pro_Id;
     @Column(name = "oid_quantity",nullable = false)
-    private int quantity;
+    private double quantity;
     @Column(name = "oid_unit_price",nullable = false)
     private double unitPrice;
     @Column (name = "oid_amount",nullable = false)

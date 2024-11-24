@@ -11,15 +11,13 @@ import lombok.*;
 public class InputInvoiceDetailRequest {
 
     @NotBlank(message = "Product ID is required")
-    @Min(value = 1, message = "Product ID must be a positive number")
-    private int PRO_ID;
+    private int pro_id;
 
     @NotBlank(message = "Warehouse ID is required")
-    @Min(value = 1, message = "Warehouse ID must be a positive number")
-    private int WH_ID;
+    private int wh_id;
 
     @NotBlank(message = "Quantity is required")
     @Min(value = 1, message = "Quantity must be a positive number")
-    private int Quantity;
+    private double quantity;
 
 }
