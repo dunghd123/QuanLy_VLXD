@@ -31,8 +31,12 @@ public class InputInvoiceController {
     }
 
     @GetMapping("find-input-invoice/{id}")
-    public InputInvoiceResponse find(@PathVariable(value = "id") int id){
-        return inputInvoiceService.getInputInvoice(id);
+    public ResponseEntity<InputInvoiceResponse> find(@PathVariable(value = "id") int id){
+        InputInvoiceResponse inputInvoiceResponse = inputInvoiceService.getInputInvoice(id);
+        if(inputInvoiceResponse == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(inputInvoiceResponse, HttpStatus.OK);
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST) // Trả về mã 400 BAD_REQUEST
