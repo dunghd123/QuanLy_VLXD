@@ -25,7 +25,7 @@ public class InputInvoiceServiceImpl implements InputInvoiceService  {
     private final PriceHistoryRepo priceHistoryRepo;
     private final EmployeeRepo employeeRepo;
     private final WarehouseProductRepo warehouseProductRepo;
-
+    // Lấy ra bán hóa đơn nhập
     public double  getInputPriceByProductID(int proid, Date creationTime){
         for(ProductPriceHistory priceHistory: priceHistoryRepo.findAll()) {
             if (priceHistory.getProduct().getId() == proid
@@ -123,8 +123,8 @@ public class InputInvoiceServiceImpl implements InputInvoiceService  {
     public InputInvoiceResponse getInputInvoice(int id) {
         Optional<InputInvoice> inputInvoice = inputInvoiceRepo.findById(id);
         return inputInvoice.map(this::convertToInputInvoiceResponse).orElse(null);
-
     }
+    // convert InputInvoice -> InputInvoiceResponse
     private InputInvoiceResponse convertToInputInvoiceResponse(InputInvoice inputInvoice){
         return InputInvoiceResponse.builder()
                 .id(inputInvoice.getId())
@@ -136,7 +136,7 @@ public class InputInvoiceServiceImpl implements InputInvoiceService  {
                 .totalAmount(inputInvoice.getTotalAmount())
                 .build();
     }
-
+    // convert InputInvoiceDetail -> InputInvoiceDetailResponse
     private InputInvoiceDetailResponse convertToInputInvoiceDetailResponse(InputInvoiceDetail inputInvoiceDetail){
         return InputInvoiceDetailResponse.builder()
                 .id(inputInvoiceDetail.getId())
@@ -148,6 +148,7 @@ public class InputInvoiceServiceImpl implements InputInvoiceService  {
                 .amount(inputInvoiceDetail.getAmount())
                 .build();
     }
+    // convert Set<InputInvoiceDetail> -> Set<InputInvoiceDetailResponse>
     private Set<InputInvoiceDetailResponse> convertToInputInvoiceDetailResponse(Set<InputInvoiceDetail> inputInvoiceDetails){
         Set<InputInvoiceDetailResponse> lst= new HashSet<>();
         for(InputInvoiceDetail inputInvoiceDetail: inputInvoiceDetails){

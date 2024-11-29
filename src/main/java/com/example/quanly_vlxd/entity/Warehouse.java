@@ -16,12 +16,13 @@ import java.util.Set;
 public class Warehouse {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "wh_id")
     private int Id;
 
-    @Column(name = "name",nullable = false)
+    @Column(name = "wh_name",nullable = false)
     private String Name;
 
-    @Column(name = "location",nullable = false)
+    @Column(name = "wh_location",nullable = false)
     private String Location;
 
     @Column(name = "isactive")
