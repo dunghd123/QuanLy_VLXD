@@ -25,9 +25,6 @@ public class WareHouse_Product {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone = "GMT+7")
     private Date LastUpdated;
 
-    @Column(name = "isactive")
-    private boolean IsActive;
-
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "wh_id", foreignKey = @ForeignKey(name = "FK_INVENTORY_WAREHOUSE"))
     @JsonIgnoreProperties(value = "warehouse")

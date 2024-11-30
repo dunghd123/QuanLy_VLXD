@@ -28,7 +28,10 @@ public class InputInvoiceController {
     public ResponseEntity<MessageResponse> updateInputInvoice(@PathVariable(value = "id") int id){
         return new ResponseEntity<>(inputInvoiceService.updateInputInvoice(id), HttpStatus.OK);
     }
-
+    @DeleteMapping("delete-input-invoice/{id}")
+    public ResponseEntity<MessageResponse> deleteInputInvoice(@PathVariable(value = "id") int id){
+        return new ResponseEntity<>(inputInvoiceService.deleteInputInvoice(id), HttpStatus.OK);
+    }
     @GetMapping("find-input-invoice/{id}")
     public ResponseEntity<InputInvoiceResponse> find(@PathVariable(value = "id") int id){
         InputInvoiceResponse inputInvoiceResponse = inputInvoiceService.getInputInvoice(id);

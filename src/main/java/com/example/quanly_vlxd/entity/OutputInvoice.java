@@ -3,10 +3,7 @@ package com.example.quanly_vlxd.entity;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 
 import java.util.Date;
@@ -18,7 +15,7 @@ import java.util.Set;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-
+@Builder
 public class OutputInvoice {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

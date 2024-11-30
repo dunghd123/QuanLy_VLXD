@@ -25,7 +25,7 @@ public class InputInvoiceServiceImpl implements InputInvoiceService  {
     private final PriceHistoryRepo priceHistoryRepo;
     private final EmployeeRepo employeeRepo;
     private final WarehouseProductRepo warehouseProductRepo;
-    // Lấy ra bán hóa đơn nhập
+    // Lấy ra giá nhập theo ID sp
     public double  getInputPriceByProductID(int proid, Date creationTime){
         for(ProductPriceHistory priceHistory: priceHistoryRepo.findAll()) {
             if (priceHistory.getProduct().getId() == proid
@@ -60,7 +60,7 @@ public class InputInvoiceServiceImpl implements InputInvoiceService  {
         // convert inputInvoiceDetailRequest thành InputInvoiceDetail
         List<InputInvoiceDetail> lst= new ArrayList<>();
         for(InputInvoiceDetailRequest inputInvoiceDetailRequest: inputInvoiceRequest.getListInvoiceDetails()){
-            Optional<Product> checkProduct = ProductRepo.findById(inputInvoiceDetailRequest.getPro_id());
+             Optional<Product> checkProduct = ProductRepo.findById(inputInvoiceDetailRequest.getPro_id());
             if (checkProduct.isEmpty())
                 return MessageResponse.builder().message("Product ID: " + inputInvoiceDetailRequest.getPro_id() + " is not exist").build();
             Optional<Warehouse> checkWH = wareHouseRepo.findById(inputInvoiceDetailRequest.getWh_id());
@@ -78,22 +78,12 @@ public class InputInvoiceServiceImpl implements InputInvoiceService  {
                     .Amount(quantity * price)
                     .build();
             lst.add(inputInvoiceDetail);
-            // Lưu vao kho
+            // Cap nhat so luong vao kho
             Optional<WareHouse_Product> warehouseProduct = warehouseProductRepo.findByWarehouseAndProduct(checkWH.get().getId(), checkProduct.get().getId());
             if (warehouseProduct.isPresent()) {
                 warehouseProduct.get().setQuantity(warehouseProduct.get().getQuantity() + quantity);
                 warehouseProduct.get().setLastUpdated(inputInvoiceRequest.getCreationTime());
-                warehouseProduct.get().setIsActive(true);
                 warehouseProductRepo.save(warehouseProduct.get());
-            } else {
-                WareHouse_Product wp = WareHouse_Product.builder()
-                        .warehouse(checkWH.get())
-                        .product(checkProduct.get())
-                        .Quantity(quantity)
-                        .LastUpdated(inputInvoiceRequest.getCreationTime())
-                        .IsActive(true)
-                        .build();
-                warehouseProductRepo.save(wp);
             }
         }
         inputInvoiceDetailRepo.saveAll(lst);
@@ -120,8 +110,27 @@ public class InputInvoiceServiceImpl implements InputInvoiceService  {
     }
 
     @Override
-    public InputInvoiceResponse getInputInvoice(int id) {
+    public MessageResponse deleteInputInvoice(int id) {
         Optional<InputInvoice> inputInvoice = inputInvoiceRepo.findById(id);
+        if(inputInvoice.isEmpty())
+            return MessageResponse.builder().message("Input invoice does not exist!!").build();
+        for(InputInvoiceDetail iid: inputInvoice.get().getInputInvoiceDetails()){
+            Optional<WareHouse_Product> warehouseProduct = warehouseProductRepo.findByWarehouseAndProduct(iid.getWarehouse().getId(), iid.getProduct().getId());
+            if (warehouseProduct.isPresent()) {
+                warehouseProduct.get().setQuantity(warehouseProduct.get().getQuantity() - iid.getQuantity());
+                warehouseProduct.get().setLastUpdated(new Date());
+                warehouseProductRepo.save(warehouseProduct.get());
+            }
+            inputInvoiceDetailRepo.delete(iid);
+        }
+        inputInvoice.get().setIsActive(false);
+        inputInvoiceRepo.save(inputInvoice.get());
+        return MessageResponse.builder().message("Delete input invoice successfully").build();
+    }
+
+    @Override
+    public InputInvoiceResponse getInputInvoice(int id) {
+        Optional<InputInvoice> inputInvoice = inputInvoiceRepo.findByInputID(id);
         return inputInvoice.map(this::convertToInputInvoiceResponse).orElse(null);
     }
     // convert InputInvoice -> InputInvoiceResponse
@@ -132,7 +141,7 @@ public class InputInvoiceServiceImpl implements InputInvoiceService  {
                 .empName(inputInvoice.getEmployee().getName())
                 .creationTime(inputInvoice.getCreationTime())
                 .updateTime(inputInvoice.getUpdateTime())
-                .listInvoiceDetails(convertToInputInvoiceDetailResponse(inputInvoice.getInputInvoiceDetails()))
+                .listInvoiceDetails(convertToSetInputInvoiceDetailResponse(inputInvoice.getInputInvoiceDetails()))
                 .totalAmount(inputInvoice.getTotalAmount())
                 .build();
     }
@@ -149,7 +158,7 @@ public class InputInvoiceServiceImpl implements InputInvoiceService  {
                 .build();
     }
     // convert Set<InputInvoiceDetail> -> Set<InputInvoiceDetailResponse>
-    private Set<InputInvoiceDetailResponse> convertToInputInvoiceDetailResponse(Set<InputInvoiceDetail> inputInvoiceDetails){
+    private Set<InputInvoiceDetailResponse> convertToSetInputInvoiceDetailResponse(Set<InputInvoiceDetail> inputInvoiceDetails){
         Set<InputInvoiceDetailResponse> lst= new HashSet<>();
         for(InputInvoiceDetail inputInvoiceDetail: inputInvoiceDetails){
             lst.add(convertToInputInvoiceDetailResponse(inputInvoiceDetail));

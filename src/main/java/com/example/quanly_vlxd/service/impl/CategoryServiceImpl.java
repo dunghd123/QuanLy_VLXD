@@ -87,8 +87,7 @@ public class CategoryServiceImpl implements CategoryService {
                 }
                 for(WareHouse_Product inv: warehouseProductRepo.findAll()){
                     if(inv.getProduct().getId()== pr.getId()){
-                        inv.setIsActive(false);
-                        warehouseProductRepo.save(inv);
+                        warehouseProductRepo.deleteById(inv.getId());
                     }
                 }
                 pr.setIsActive(false);
