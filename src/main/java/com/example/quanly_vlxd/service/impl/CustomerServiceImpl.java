@@ -1,4 +1,5 @@
 package com.example.quanly_vlxd.service.impl;
+
 import com.example.quanly_vlxd.dto.request.CustomerRequest;
 import com.example.quanly_vlxd.dto.response.CusResponse;
 import com.example.quanly_vlxd.dto.response.MessageResponse;
@@ -15,6 +16,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -92,6 +94,22 @@ public class CustomerServiceImpl implements CustomerService {
         customer.get().setIsActive(false);
         customerRepo.save(customer.get());
         return MessageResponse.builder().message("Delete customer successfully!!!").build();
+    }
+    private static String convertName(String name){
+        List<String> set = new ArrayList<>();
+        String[] words = name.split(" ");
+        for (String w : words) {
+            w = w.substring(0, 1).toUpperCase() + w.substring(1).toLowerCase();
+            set.add(w);
+        }
+        return String.join(" ", set);
+    }
+    public void setLowerName() {
+        List<Customer> customers = customerRepo.findAll();
+        for(Customer customer: customers){
+            customer.setName(convertName(customer.getName()));
+        }
+        customerRepo.saveAll(customers);
     }
 
     @Override

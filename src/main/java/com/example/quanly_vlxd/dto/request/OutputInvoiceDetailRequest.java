@@ -11,7 +11,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class OutputInvoiceDetailRequest {
+public class    OutputInvoiceDetailRequest {
     @NotBlank(message = "Product ID is required")
     private int pro_id;
 
