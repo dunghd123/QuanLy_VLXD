@@ -30,6 +30,11 @@ public class CustomerController {
     public ResponseEntity<MessageResponse> updateCustomer(@PathVariable(value = "id") int id,@Valid @RequestBody CustomerRequest customerRequest){
         return new ResponseEntity<>(customerServiceImpl.updateCustomer(id, customerRequest), HttpStatus.OK);
     }
+
+    @PutMapping("convert-customer")
+    public void convertCustomer(){
+        customerServiceImpl.setLowerName();
+    }
     @DeleteMapping("delete-customer/{id}")
     public ResponseEntity<MessageResponse> deleteCustomer(@PathVariable(value = "id") int id){
         return new ResponseEntity<>(customerServiceImpl.deleteCustomer(id), HttpStatus.OK);
