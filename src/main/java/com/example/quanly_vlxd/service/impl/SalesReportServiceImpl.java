@@ -1,6 +1,7 @@
 package com.example.quanly_vlxd.service.impl;
 
 import com.example.quanly_vlxd.dto.request.SalesDetailReportRequest;
+import com.example.quanly_vlxd.dto.request.SalesRevenueQuaterRequest;
 import com.example.quanly_vlxd.dto.response.*;
 import com.example.quanly_vlxd.entity.*;
 import com.example.quanly_vlxd.repo.*;
@@ -12,6 +13,8 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
+import static com.example.quanly_vlxd.help.DateConvert.getDate;
 
 @Service
 @RequiredArgsConstructor
@@ -95,6 +98,46 @@ public class SalesReportServiceImpl implements SalesReportService {
         }
         return null;
     }
+    //doanh thu tim theo quy
+    @Override
+    public SalesReportResponse generateSalesReportByQuater(SalesRevenueQuaterRequest request) {
+        List<OutputInvoice> invoices = fetchInvoiceByQuater(request);
+        BigDecimal totalRevenue = BigDecimal.ZERO;
+        List<OutputInvoiceDetail> details;
+        List<SalesDetailResponse> salesDetails = new ArrayList<>();
+        for(OutputInvoice invoice : invoices) {
+            details=outputInvoiceDetailRepository.findByOutputInvoiceId(invoice.getId());
+            for (OutputInvoiceDetail detail : details) {
+                SalesDetailResponse salesDetail = mapToSalesDetailResponse(invoice, detail);
+                salesDetails.add(salesDetail);
+            }
+        }
+        for(OutputInvoice invoice : invoices) {
+            totalRevenue = totalRevenue.add(BigDecimal.valueOf(invoice.getTotalAmount()));
+        }
+        return SalesReportResponse.builder()
+                .totalRevenue(totalRevenue)
+                .SalesDetails(salesDetails)
+                .build();
+    }
+    //doanh thu theo quy
+    @Override
+    public List<SalesQuaterResponse> allQuarterReport(int year) {
+        List<SalesQuaterResponse> salesQuaterResponses = new ArrayList<>();
+        for(int i = 1; i <= 4; i++) {
+            BigDecimal total = BigDecimal.ZERO;
+            List<OutputInvoice> invoices =outputInvoiceRepository.findByCreationTimeBetween(getDate(year, i, "start"), getDate(year, i, "end"));
+            for(OutputInvoice invoice : invoices) {
+                total = total.add(BigDecimal.valueOf(invoice.getTotalAmount()));
+            }
+            salesQuaterResponses.add(SalesQuaterResponse.builder()
+                    .quarter(i)
+                    .total(total)
+                    .build());
+        }
+        return salesQuaterResponses;
+    }
+
     //Tong doanh thu trong khoang thoi gian
     private SalesReportResponse getTotalRevenue(SalesDetailReportRequest request, BigDecimal totalRevenue) {
         List<OutputInvoice> invoices = fetchInvoices(request);
@@ -203,6 +246,29 @@ public class SalesReportServiceImpl implements SalesReportService {
                 .build();
     }
 
+
+    private List<OutputInvoice> fetchInvoiceByQuater(SalesRevenueQuaterRequest request) {
+        List<OutputInvoice> invoices=new ArrayList<>();
+        switch (request.getQuarter()) {
+            case 1:{
+                invoices=outputInvoiceRepository.findByCreationTimeBetween(getDate(request.getYear(), 1, "start"), getDate(request.getYear(), 1, "end"));
+                break;
+            }
+            case 2:{
+                invoices=outputInvoiceRepository.findByCreationTimeBetween(getDate(request.getYear(), 2, "start"), getDate(request.getYear(),2, "end"));
+                break;
+            }
+            case 3:{
+                invoices=outputInvoiceRepository.findByCreationTimeBetween(getDate(request.getYear(), 3, "start"), getDate(request.getYear(), 3, "end"));
+                break;
+            }
+            case 4:{
+                invoices=outputInvoiceRepository.findByCreationTimeBetween(getDate(request.getYear(), 4, "start"), getDate(request.getYear(), 4, "end"));
+                break;
+            }
+        }
+        return invoices;
+    }
     private List<OutputInvoice> fetchInvoices(SalesDetailReportRequest request) {
         List<OutputInvoice> invoices;
 
