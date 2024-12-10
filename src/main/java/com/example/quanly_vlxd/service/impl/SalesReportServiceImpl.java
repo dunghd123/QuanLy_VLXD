@@ -1,7 +1,8 @@
 package com.example.quanly_vlxd.service.impl;
 
 import com.example.quanly_vlxd.dto.request.SalesDetailReportRequest;
-import com.example.quanly_vlxd.dto.request.SalesRevenueQuaterRequest;
+import com.example.quanly_vlxd.dto.request.SalesRevenueByRegionRequest;
+import com.example.quanly_vlxd.dto.request.SalesRevenueQuarterRequest;
 import com.example.quanly_vlxd.dto.response.*;
 import com.example.quanly_vlxd.entity.*;
 import com.example.quanly_vlxd.repo.*;
@@ -15,6 +16,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static com.example.quanly_vlxd.help.DateConvert.getDate;
+import static com.example.quanly_vlxd.help.VnProvinceHelper.checkAddress;
 
 @Service
 @RequiredArgsConstructor
@@ -100,7 +102,7 @@ public class SalesReportServiceImpl implements SalesReportService {
     }
     //doanh thu tim theo quy
     @Override
-    public SalesReportResponse generateSalesReportByQuater(SalesRevenueQuaterRequest request) {
+    public SalesReportResponse generateSalesReportByQuater(SalesRevenueQuarterRequest request) {
         List<OutputInvoice> invoices = fetchInvoiceByQuater(request);
         BigDecimal totalRevenue = BigDecimal.ZERO;
         List<OutputInvoiceDetail> details;
@@ -122,21 +124,61 @@ public class SalesReportServiceImpl implements SalesReportService {
     }
     //doanh thu theo quy
     @Override
-    public List<SalesQuaterResponse> allQuarterReport(int year) {
-        List<SalesQuaterResponse> salesQuaterResponses = new ArrayList<>();
+    public List<SalesQuarterResponse> allQuarterReport(int year) {
+        List<SalesQuarterResponse> salesQuarterRespons = new ArrayList<>();
         for(int i = 1; i <= 4; i++) {
             BigDecimal total = BigDecimal.ZERO;
             List<OutputInvoice> invoices =outputInvoiceRepository.findByCreationTimeBetween(getDate(year, i, "start"), getDate(year, i, "end"));
             for(OutputInvoice invoice : invoices) {
                 total = total.add(BigDecimal.valueOf(invoice.getTotalAmount()));
             }
-            salesQuaterResponses.add(SalesQuaterResponse.builder()
+            salesQuarterRespons.add(SalesQuarterResponse.builder()
                     .quarter(i)
                     .total(total)
                     .build());
         }
-        return salesQuaterResponses;
+        return salesQuarterRespons;
     }
+    //Tim kiem theo khu vuc
+    @Override
+    public SalesReportResponse salesRevenueByRegion(SalesRevenueByRegionRequest request) {
+        List<SalesRegionResponse> result= new ArrayList<>();
+        if(request.getRegion().isEmpty()){
+            result.add(doanhThuTheoMien("Miền Bắc"));
+            result.add(doanhThuTheoMien("Miền Trung"));
+            result.add(doanhThuTheoMien("Miền Nam"));
+        }
+        if(request.getRegion().size()==1){
+            result.add(doanhThuTheoMien(request.getRegion().get(0)));
+        }
+        if(request.getRegion().size()==2){
+            for(int i=0;i<2;i++){
+                result.add(doanhThuTheoMien(request.getRegion().get(i)));
+            }
+        }
+        BigDecimal totalRevenue= BigDecimal.ZERO;
+        for(SalesRegionResponse sr : result){
+            totalRevenue= totalRevenue.add(sr.getTotalRevenue());
+        }
+        return SalesReportResponse.builder()
+                .totalRevenue(totalRevenue)
+                .SalesDetails(result)
+                .build();
+    }
+
+    private SalesRegionResponse doanhThuTheoMien(String region){
+        BigDecimal total= BigDecimal.ZERO;
+        for(OutputInvoice oi: outputInvoiceRepository.findAll()){
+            if(checkAddress(oi.getShipAddress()).equals(region)){
+                total= total.add(BigDecimal.valueOf(oi.getTotalAmount()));
+            }
+        }
+        return SalesRegionResponse.builder()
+                .region(region)
+                .totalRevenue(total)
+                .build();
+    }
+
 
     //Tong doanh thu trong khoang thoi gian
     private SalesReportResponse getTotalRevenue(SalesDetailReportRequest request, BigDecimal totalRevenue) {
@@ -246,8 +288,7 @@ public class SalesReportServiceImpl implements SalesReportService {
                 .build();
     }
 
-
-    private List<OutputInvoice> fetchInvoiceByQuater(SalesRevenueQuaterRequest request) {
+    private List<OutputInvoice> fetchInvoiceByQuater(SalesRevenueQuarterRequest request) {
         List<OutputInvoice> invoices=new ArrayList<>();
         switch (request.getQuarter()) {
             case 1:{

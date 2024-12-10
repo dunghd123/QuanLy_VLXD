@@ -1,11 +1,12 @@
 package com.example.quanly_vlxd.controller;
 
 import com.example.quanly_vlxd.dto.request.SalesDetailReportRequest;
-import com.example.quanly_vlxd.dto.request.SalesRevenueQuaterRequest;
+import com.example.quanly_vlxd.dto.request.SalesRevenueByRegionRequest;
+import com.example.quanly_vlxd.dto.request.SalesRevenueQuarterRequest;
 import com.example.quanly_vlxd.dto.response.SalesDetailResponse;
-import com.example.quanly_vlxd.dto.response.SalesQuaterResponse;
+import com.example.quanly_vlxd.dto.response.SalesQuarterResponse;
 import com.example.quanly_vlxd.dto.response.SalesReportResponse;
-import com.example.quanly_vlxd.service.SalesReportService;
+import com.example.quanly_vlxd.service.impl.SalesReportServiceImpl;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -22,7 +23,7 @@ import static com.example.quanly_vlxd.help.MapErrors.getMapErrors;
 public class SalesReportController {
 
     @Autowired
-    private SalesReportService salesReportService;
+    private SalesReportServiceImpl salesReportService;
 
     @GetMapping("sales-report-detailed")
     public List<SalesDetailResponse> generateSalesReportDetailed(@RequestBody SalesDetailReportRequest request) {
@@ -35,12 +36,16 @@ public class SalesReportController {
        return salesReportService.generateSalesReportRevenue(request);
     }
     @GetMapping("sales-report-by-quater")
-        public SalesReportResponse generateSalesReportByQuater(@Valid @RequestBody SalesRevenueQuaterRequest request) {
+        public SalesReportResponse generateSalesReportByQuater(@Valid @RequestBody SalesRevenueQuarterRequest request) {
         return salesReportService.generateSalesReportByQuater(request);
     }
     @GetMapping("total-revenue-by-quater")
-    public List<SalesQuaterResponse> generateTotalRevenueAllQuater(@RequestParam int year) {
+    public List<SalesQuarterResponse> generateTotalRevenueAllQuater(@RequestParam int year) {
         return salesReportService.allQuarterReport(year);
+    }
+    @GetMapping("total-revenue-by-region")
+    public SalesReportResponse generateTotalRevenuebyRegion(@Valid @RequestBody SalesRevenueByRegionRequest request) {
+        return salesReportService.salesRevenueByRegion(request);
     }
     @ResponseStatus(HttpStatus.BAD_REQUEST) // Trả về mã 400 BAD_REQUEST
     @ExceptionHandler(MethodArgumentNotValidException.class) // Xử lý ngoại lệ MethodArgumentNotValidException

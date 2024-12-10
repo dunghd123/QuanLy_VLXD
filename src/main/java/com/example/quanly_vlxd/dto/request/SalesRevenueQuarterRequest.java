@@ -11,7 +11,7 @@ import org.hibernate.validator.constraints.Range;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class SalesRevenueQuaterRequest {
+public class SalesRevenueQuarterRequest {
     @NotNull(message = "Year is required")
     private int year;
     @NotNull(message = "Quarter is required")
