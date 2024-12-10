@@ -9,7 +9,7 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class SalesQuaterResponse {
-    int quarter;
-    BigDecimal total;
+public class SalesRegionResponse {
+    private String region;
+    private BigDecimal totalRevenue;
 }
