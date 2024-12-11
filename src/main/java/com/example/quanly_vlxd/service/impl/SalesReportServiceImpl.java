@@ -7,9 +7,15 @@ import com.example.quanly_vlxd.dto.response.*;
 import com.example.quanly_vlxd.entity.*;
 import com.example.quanly_vlxd.repo.*;
 import com.example.quanly_vlxd.service.SalesReportService;
+import com.itextpdf.text.*;
+import com.itextpdf.text.pdf.BaseFont;
+import com.itextpdf.text.pdf.PdfPCell;
+import com.itextpdf.text.pdf.PdfPTable;
+import com.itextpdf.text.pdf.PdfWriter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.io.FileOutputStream;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -337,5 +343,132 @@ public class SalesReportServiceImpl implements SalesReportService {
                     request.getStartDate(), request.getEndDate(), request.getProductIds(), request.getCustomerIds(), request.getEmployeeIds());
         }
         return invoices;
+    }
+
+   @Override
+    public void generateReportQuaterToPdf(int year) throws Exception {
+        // Tạo một đối tượng Document
+        com.itextpdf.text.Document document = new Document();
+
+        // Tạo một đối tượng PdfWriter
+        PdfWriter.getInstance(document, new FileOutputStream("sales_quarter_report.pdf"));
+
+        // Mở tài liệu
+        document.open();
+
+       BaseFont fontBase = BaseFont.createFont("C:/Windows/Fonts/Tahoma.ttf", BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
+       Font font1 = new Font(fontBase, 18, Font.BOLD);
+       Font font2= new Font(fontBase,13);
+        Chunk chunk = new Chunk("Báo cáo doanh thu theo quý"+ " năm "+year, font1);
+        Paragraph title = new Paragraph(chunk);
+        title.setAlignment(Element.ALIGN_CENTER);
+        document.add(title);
+
+// Thêm bảng biểu
+        PdfPTable table = new PdfPTable(2);
+        table.setWidthPercentage(100);
+        table.setSpacingBefore(10);
+        table.setSpacingAfter(10);
+
+        PdfPCell cell = new PdfPCell(new Phrase("Quý", font1));
+        cell.setPadding(5);
+        cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+        cell.setVerticalAlignment(Element.ALIGN_CENTER);
+        cell.setBackgroundColor(BaseColor.WHITE);
+        cell.setBorderWidth(1);
+        cell.setBorderColor(BaseColor.BLACK);
+        table.addCell(cell);
+
+        cell = new PdfPCell(new Phrase("Doanh thu", font1));
+        cell.setPadding(5);
+        cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+        cell.setVerticalAlignment(Element.ALIGN_CENTER);
+        cell.setBackgroundColor(BaseColor.WHITE);
+        cell.setBorderWidth(1);
+        cell.setBorderColor(BaseColor.BLACK);
+        table.addCell(cell);
+
+        List<SalesQuarterResponse> salesQuarterRespons = allQuarterReport(year);
+        for (SalesQuarterResponse response : salesQuarterRespons) {
+            cell = new PdfPCell(new Phrase(String.valueOf(response.getQuarter()), font2));
+            table.addCell(cell);
+            cell = new PdfPCell(new Phrase(response.getTotal().toString() + " VND",font2));
+            table.addCell(cell);
+        }
+        BigDecimal total = allQuarterReport(year).stream().map(SalesQuarterResponse::getTotal).reduce(BigDecimal.ZERO, BigDecimal::add);
+        cell = new PdfPCell(new Phrase("Tổng doanh thu", font2));
+        table.addCell(cell);
+        cell = new PdfPCell(new Phrase(total+ " VND",font2));
+        table.addCell(cell);
+
+        document.add(table);
+
+        // Đóng tài liệu
+        document.close();
+    }
+    @Override
+    public void generateReportRegionToPdf() throws Exception {
+        // Tạo một đối tượng Document
+        com.itextpdf.text.Document document = new Document();
+
+        // Tạo một đối tượng PdfWriter
+        PdfWriter.getInstance(document, new FileOutputStream("sales_region_report.pdf"));
+
+        // Mở tài liệu
+        document.open();
+
+        BaseFont fontBase = BaseFont.createFont("C:/Windows/Fonts/Tahoma.ttf", BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
+        Font font1 = new Font(fontBase, 18, Font.BOLD);
+        Font font2= new Font(fontBase,13);
+        Chunk chunk = new Chunk("Báo cáo doanh thu theo khu vực", font1);
+        Paragraph title = new Paragraph(chunk);
+        title.setAlignment(Element.ALIGN_CENTER);
+        document.add(title);
+
+        // Thêm bảng biểu
+        PdfPTable table = new PdfPTable(2);
+        table.setWidthPercentage(100);
+        table.setSpacingBefore(10);
+        table.setSpacingAfter(10);
+
+        PdfPCell cell = new PdfPCell(new Phrase("Khu Vực", font1));
+        cell.setPadding(5);
+        cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+        cell.setVerticalAlignment(Element.ALIGN_CENTER);
+        cell.setBackgroundColor(BaseColor.WHITE);
+        cell.setBorderWidth(1);
+        cell.setBorderColor(BaseColor.BLACK);
+        table.addCell(cell);
+
+        cell = new PdfPCell(new Phrase("Doanh thu", font1));
+        cell.setPadding(5);
+        cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+        cell.setVerticalAlignment(Element.ALIGN_CENTER);
+        cell.setBackgroundColor(BaseColor.WHITE);
+        cell.setBorderWidth(1);
+        cell.setBorderColor(BaseColor.BLACK);
+        table.addCell(cell);
+
+        List<SalesRegionResponse> salesRegionResponses= new ArrayList<>();
+        salesRegionResponses.add(doanhThuTheoMien("Miền Bắc"));
+        salesRegionResponses.add(doanhThuTheoMien("Miền Trung"));
+        salesRegionResponses.add(doanhThuTheoMien("Miền Nam"));
+        for (SalesRegionResponse response : salesRegionResponses) {
+            cell = new PdfPCell(new Phrase(response.getRegion(),font2));
+            table.addCell(cell);
+            cell = new PdfPCell(new Phrase(response.getTotalRevenue().toString() + " VND"));
+            table.addCell(cell);
+        }
+        BigDecimal total= salesRegionResponses.stream().map(SalesRegionResponse::getTotalRevenue).reduce(BigDecimal.ZERO, BigDecimal::add);
+        cell = new PdfPCell(new Phrase("Tổng",font2));
+        table.addCell(cell);
+        cell = new PdfPCell(new Phrase(total + " VND",font2));
+        table.addCell(cell);
+
+
+        document.add(table);
+
+        // Đóng tài liệu
+        document.close();
     }
 }
