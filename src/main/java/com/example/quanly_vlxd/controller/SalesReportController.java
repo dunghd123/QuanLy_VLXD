@@ -47,6 +47,15 @@ public class SalesReportController {
     public SalesReportResponse generateTotalRevenuebyRegion(@Valid @RequestBody SalesRevenueByRegionRequest request) {
         return salesReportService.salesRevenueByRegion(request);
     }
+
+    @GetMapping("generate-sales-report-to-Pdf-by-quater")
+    public void generateSalesReportByQuater(@RequestParam int year) throws Exception {
+        salesReportService.generateReportQuaterToPdf(year);
+    }
+    @GetMapping("generate-sales-report-to-Pdf-by-region")
+    public void generateSalesReportByRegion() throws Exception {
+        salesReportService.generateReportRegionToPdf();
+    }
     @ResponseStatus(HttpStatus.BAD_REQUEST) // Trả về mã 400 BAD_REQUEST
     @ExceptionHandler(MethodArgumentNotValidException.class) // Xử lý ngoại lệ MethodArgumentNotValidException
     public Map<String, String> handleValidationExceptions(MethodArgumentNotValidException ex) {

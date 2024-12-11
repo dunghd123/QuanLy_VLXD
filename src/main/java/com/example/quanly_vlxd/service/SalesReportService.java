@@ -17,5 +17,6 @@ public interface SalesReportService {
     SalesReportResponse generateSalesReportByQuater(SalesRevenueQuarterRequest request);
     List<SalesQuarterResponse> allQuarterReport(int year);
     SalesReportResponse salesRevenueByRegion(SalesRevenueByRegionRequest request);
-
+    void generateReportQuaterToPdf(int year) throws Exception;
+    void generateReportRegionToPdf() throws Exception;
 }
