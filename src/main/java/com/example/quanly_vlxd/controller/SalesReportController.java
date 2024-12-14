@@ -1,5 +1,6 @@
 package com.example.quanly_vlxd.controller;
 
+import com.example.quanly_vlxd.dto.request.InputInvoiceReportRequest;
 import com.example.quanly_vlxd.dto.request.SalesDetailReportRequest;
 import com.example.quanly_vlxd.dto.request.SalesRevenueByRegionRequest;
 import com.example.quanly_vlxd.dto.request.SalesRevenueQuarterRequest;
@@ -46,6 +47,14 @@ public class SalesReportController {
     @GetMapping("total-revenue-by-region")
     public SalesReportResponse generateTotalRevenuebyRegion(@Valid @RequestBody SalesRevenueByRegionRequest request) {
         return salesReportService.salesRevenueByRegion(request);
+    }
+    @GetMapping("total-amount-input-invoice")
+    public SalesReportResponse getTotalAmountInputInvoice(@Valid @RequestBody InputInvoiceReportRequest request) {
+        return salesReportService.getTotalAmountInputInvoice(request);
+    }
+    @GetMapping("total-amount-by-quater")
+    public SalesReportResponse getTotalAmountByQuater(@Valid @RequestBody SalesRevenueQuarterRequest request) {
+        return salesReportService.getTotalAmountByQuater(request);
     }
 
     @GetMapping("generate-sales-report-to-Pdf-by-quater")
