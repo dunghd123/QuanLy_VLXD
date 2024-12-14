@@ -1,5 +1,6 @@
 package com.example.quanly_vlxd.service.impl;
 
+import com.example.quanly_vlxd.dto.request.InputInvoiceReportRequest;
 import com.example.quanly_vlxd.dto.request.SalesDetailReportRequest;
 import com.example.quanly_vlxd.dto.request.SalesRevenueByRegionRequest;
 import com.example.quanly_vlxd.dto.request.SalesRevenueQuarterRequest;
@@ -34,10 +35,13 @@ public class SalesReportServiceImpl implements SalesReportService {
     private final CustomerRepo customerRepository;
     private final EmployeeRepo employeeRepository;
     private final WareHouseRepo warehouseRepository;
+    private final InputInvoiceRepo inputInvoiceRepo;
+    private final InputInvoiceDetailRepo inputInvoiceDetailRepo;
+    private final SupplierRepo supplierRepository;
 
     @Override
     public List<SalesDetailResponse> generateSalesReportDetailed(SalesDetailReportRequest request) {
-        List<OutputInvoice> invoices = fetchInvoices(request);
+        List<OutputInvoice> invoices = fetchOutputInvoices(request);
         List<SalesDetailResponse> salesDetails = new ArrayList<>();
         List<OutputInvoiceDetail> details;
         for (OutputInvoice invoice : invoices) {
@@ -81,6 +85,29 @@ public class SalesReportServiceImpl implements SalesReportService {
                 .quantitySold(detail.getQuantity())
                 .build();
     }
+    private SalesInputResponse mapToSalesInputResponse(InputInvoice invoice,InputInvoiceDetail detail) {
+        Optional<Employee> employee = employeeRepository.findById(invoice.getEmployee().getId());
+        Optional<Supplier> supplier = supplierRepository.findById(invoice.getSupplier().getId());
+        Optional<Product> product = productRepository.findById(detail.getProduct().getId());
+        Optional<Warehouse> warehouse = warehouseRepository.findById(detail.getWarehouse().getId());
+        if(employee.isEmpty() || supplier.isEmpty() || product.isEmpty() || warehouse.isEmpty()) {
+            return null;
+        }
+        return SalesInputResponse.builder()
+                .invoiceID(invoice.getId())
+                .invoiceDate(invoice.getCreationTime())
+                .supplierID(supplier.get().getId())
+                .supplierName(supplier.get().getName())
+                .employeeID(employee.get().getId())
+                .employeeName(employee.get().getName())
+                .productName(product.get().getName())
+                .productID(detail.getProduct().getId())
+                .warehouseName(warehouse.get().getName())
+                .unitMeasure(product.get().getUnitMeasure())
+                .unitPrice(detail.getUnitPrice())
+                .quantityBuy(detail.getQuantity())
+                .build();
+    }
     @Override
     public SalesReportResponse generateSalesReportRevenue(SalesDetailReportRequest request) {
         //xóa trung lap
@@ -89,13 +116,13 @@ public class SalesReportServiceImpl implements SalesReportService {
         List<Integer> uniqueEmployeeIds = request.getEmployeeIds().stream().distinct().toList();
         //tinh total revenue
         BigDecimal totalRevenue = BigDecimal.ZERO;
-        List<OutputInvoiceDetail> details = null;
+        List<OutputInvoiceDetail> details = new ArrayList<>();
         List<SalesProductResponse> salesProducts = new ArrayList<>();
         List<SalesCustomerResponse> salesCustomers = new ArrayList<>();
         List<SalesEmployeeResponse> salesEmployee = new ArrayList<>();
         //Loc theo cac tieu chi
         if(!request.getProductIds().isEmpty() && request.getCustomerIds().isEmpty() && request.getEmployeeIds().isEmpty()) {// Tim theo product
-            return filterByProduct(details,uniqueProductIds, request,salesProducts,totalRevenue);
+            return filterByProductOutput(details,uniqueProductIds, request,salesProducts,totalRevenue);
         }
         else if(request.getProductIds().isEmpty() && !request.getCustomerIds().isEmpty() && request.getEmployeeIds().isEmpty()) { // Tim theo customer
             return filterByCustomer(request,uniqueCustomerIds,salesCustomers,totalRevenue);
@@ -109,7 +136,7 @@ public class SalesReportServiceImpl implements SalesReportService {
     //doanh thu tim theo quy
     @Override
     public SalesReportResponse generateSalesReportByQuater(SalesRevenueQuarterRequest request) {
-        List<OutputInvoice> invoices = fetchInvoiceByQuater(request);
+        List<OutputInvoice> invoices = fetchOutputInvoiceByQuarter(request);
         BigDecimal totalRevenue = BigDecimal.ZERO;
         List<OutputInvoiceDetail> details;
         List<SalesDetailResponse> salesDetails = new ArrayList<>();
@@ -171,6 +198,50 @@ public class SalesReportServiceImpl implements SalesReportService {
                 .SalesDetails(result)
                 .build();
     }
+    //Tổng tiền nhập hàng theo sản phẩm hoặc theo nhà cung cấp và theo thời gian
+    @Override
+    public SalesReportResponse getTotalAmountInputInvoice(InputInvoiceReportRequest request) {
+        //xóa trung lap
+        List<Integer> uniqueProductIds = request.getProductIds().stream().distinct().toList();
+        List<Integer> uniqueSupplierIds = request.getSupplierIds().stream().distinct().toList();
+
+        //tinh total amount
+        BigDecimal totalRevenue = BigDecimal.ZERO;
+        List<InputInvoiceDetail> details = new ArrayList<>();
+        List<SalesProductResponse> salesProducts = new ArrayList<>();
+        List<SupplierDetailResonse> salesCustomers = new ArrayList<>();
+        //Loc theo cac tieu chi
+        if(!request.getProductIds().isEmpty() && request.getSupplierIds().isEmpty()) {// Tim theo product
+            return filterByProductInput(details,uniqueProductIds, request,salesProducts,totalRevenue);
+        }
+        else if(request.getProductIds().isEmpty() && !request.getSupplierIds().isEmpty()) { // Tim theo supplier
+            return filterBySupplier(request,uniqueSupplierIds,salesCustomers,totalRevenue);
+        }else {
+            return  getTotalAmountByMonth(request, totalRevenue);
+        }
+    }
+    //Tổng tiền nhập hàng theo quý
+    @Override
+    public SalesReportResponse getTotalAmountByQuater(SalesRevenueQuarterRequest request) {
+        List<InputInvoice> invoices = fetchInputInvoiceByQuarter(request);
+        BigDecimal totalRevenue = BigDecimal.ZERO;
+        List<InputInvoiceDetail> details;
+        List<SalesInputResponse> salesInputResponseList = new ArrayList<>();
+        for(InputInvoice invoice : invoices) {
+            details=inputInvoiceDetailRepo.findByInputInvoiceId(invoice.getId());
+            for (InputInvoiceDetail detail : details) {
+                SalesInputResponse salesInputResponse = mapToSalesInputResponse(invoice, detail);
+                salesInputResponseList.add(salesInputResponse);
+            }
+        }
+        for(InputInvoice invoice : invoices) {
+            totalRevenue = totalRevenue.add(BigDecimal.valueOf(invoice.getTotalAmount()));
+        }
+        return SalesReportResponse.builder()
+                .totalRevenue(totalRevenue)
+                .SalesDetails(salesInputResponseList)
+                .build();
+    }
 
     private SalesRegionResponse doanhThuTheoMien(String region){
         BigDecimal total= BigDecimal.ZERO;
@@ -184,11 +255,19 @@ public class SalesReportServiceImpl implements SalesReportService {
                 .totalRevenue(total)
                 .build();
     }
-
-
+    // tong tien nhap theo thang
+    private SalesReportResponse getTotalAmountByMonth(InputInvoiceReportRequest request, BigDecimal totalRevenue) {
+        List<InputInvoice> invoices = fetchInputInvoices(request);
+        for(InputInvoice invoice : invoices) {
+            totalRevenue = totalRevenue.add(BigDecimal.valueOf(invoice.getTotalAmount()));
+        }
+        return SalesReportResponse.builder()
+                .totalRevenue(totalRevenue)
+                .build();
+    }
     //Tong doanh thu trong khoang thoi gian
     private SalesReportResponse getTotalRevenue(SalesDetailReportRequest request, BigDecimal totalRevenue) {
-        List<OutputInvoice> invoices = fetchInvoices(request);
+        List<OutputInvoice> invoices = fetchOutputInvoices(request);
         for(OutputInvoice invoice : invoices) {
             totalRevenue = totalRevenue.add(BigDecimal.valueOf(invoice.getTotalAmount()));
         }
@@ -202,7 +281,7 @@ public class SalesReportServiceImpl implements SalesReportService {
             List<Integer> uniqueEmployeeIds,
             List<SalesEmployeeResponse> salesEmployee,
             BigDecimal totalRevenue) {
-        List<OutputInvoice> invoices = fetchInvoices(request);
+        List<OutputInvoice> invoices = fetchOutputInvoices(request);
         for(Integer i : uniqueEmployeeIds) {
             Optional<Employee> employee = employeeRepository.findById(i);
             if (employee.isEmpty()) {
@@ -233,7 +312,7 @@ public class SalesReportServiceImpl implements SalesReportService {
             List<Integer> uniqueCustomerIds,
             List<SalesCustomerResponse> salesCustomers,
             BigDecimal totalRevenue) {
-        List<OutputInvoice> invoices = fetchInvoices(request);
+        List<OutputInvoice> invoices = fetchOutputInvoices(request);
         for(Integer i : uniqueCustomerIds) {
             Optional<Customer> customer = customerRepository.findById(i);
             if(customer.isEmpty()) {
@@ -258,8 +337,39 @@ public class SalesReportServiceImpl implements SalesReportService {
                 .SalesDetails(salesCustomers)
                 .build();
     }
+    // tong tien theo nha cung cap
+    private SalesReportResponse filterBySupplier(
+            InputInvoiceReportRequest request,
+            List<Integer> uniqueSupplierIds,
+            List<SupplierDetailResonse> supplierResponse,
+            BigDecimal totalRevenue) {
+        List<InputInvoice> invoices = fetchInputInvoices(request);
+        for(Integer i : uniqueSupplierIds) {
+            Optional<Supplier> supplier = supplierRepository.findById(i);
+            if(supplier.isEmpty()) {
+                return null;
+            }
+            for(InputInvoice invoice : invoices) {
+                if(i.equals(invoice.getSupplier().getId())) {
+                    supplierResponse.add(SupplierDetailResonse.builder()
+                            .suppId(supplier.get().getId())
+                            .suppName(supplier.get().getName())
+                            .inputInvoiceId(invoice.getId())
+                            .total(invoice.getTotalAmount())
+                            .build());
+                }
+            }
+            for(InputInvoice invoice : invoices) {
+                totalRevenue = totalRevenue.add(BigDecimal.valueOf(invoice.getTotalAmount()));
+            }
+        }
+        return SalesReportResponse.builder()
+                .totalRevenue(totalRevenue)
+                .SalesDetails(supplierResponse)
+                .build();
+    }
     //doanh thu theo san pham
-    private SalesReportResponse filterByProduct(
+    private SalesReportResponse filterByProductOutput(
             List<OutputInvoiceDetail> details,
             List<Integer> uniqueProductIds,
             SalesDetailReportRequest request,
@@ -267,24 +377,28 @@ public class SalesReportServiceImpl implements SalesReportService {
             BigDecimal totalRevenue) {
         details=outputInvoiceDetailRepository.filterByProduct(request.getProductIds());
         for(Integer i : uniqueProductIds) {
+            Optional<Product> product = productRepository.findById(i);
+            if(product.isEmpty()) {
+                return null;
+            }
             double quantity = 0.0;
             double total=0.0;
-            SalesProductResponse salesProduct = null;
+            SalesProductResponse salesProduct  = SalesProductResponse.builder()
+                    .proId(product.get().getId())
+                    .proName(product.get().getName())
+                    .quantity(0)
+                    .total(0)
+                    .build();
             for(OutputInvoiceDetail detail : details) {
                 if(i.equals(detail.getPro_Id())) {
                     quantity += detail.getQuantity();
                     total += detail.getAmount();
-                    salesProduct = SalesProductResponse.builder()
-                            .proId(detail.getPro_Id())
-                            .proName(productRepository.findById(detail.getPro_Id()).get().getName())
-                            .quantity(quantity)
-                            .total(total)
-                            .build();
+                    salesProduct.setQuantity(quantity);
+                    salesProduct.setTotal(total);
                 }
             }
             salesProducts.add(salesProduct);
         }
-        //tinh total revenue
         for(SalesProductResponse salesProduct : salesProducts) {
             totalRevenue = totalRevenue.add(BigDecimal.valueOf(salesProduct.getTotal()));
         }
@@ -293,8 +407,47 @@ public class SalesReportServiceImpl implements SalesReportService {
                 .SalesDetails(salesProducts)
                 .build();
     }
-
-    private List<OutputInvoice> fetchInvoiceByQuater(SalesRevenueQuarterRequest request) {
+    //tong tien nhap theo san pham
+    private SalesReportResponse filterByProductInput(
+            List<InputInvoiceDetail> details,
+            List<Integer> uniqueProductIds,
+            InputInvoiceReportRequest request,
+            List<SalesProductResponse> salesProducts,
+            BigDecimal totalRevenue) {
+        details=inputInvoiceDetailRepo.filterByProduct(request.getProductIds());
+        for(Integer i : uniqueProductIds) {
+            Optional<Product> product = productRepository.findById(i);
+            if(product.isEmpty()) {
+                return null;
+            }
+            double quantity = 0.0;
+            double total=0.0;
+            SalesProductResponse salesProduct = SalesProductResponse.builder()
+                    .proId(product.get().getId())
+                    .proName(product.get().getName())
+                    .quantity(0)
+                    .total(0)
+                    .build();
+            for(InputInvoiceDetail detail : details) {
+                if(i.equals(detail.getProduct().getId())) {
+                    quantity += detail.getQuantity();
+                    total += detail.getAmount();
+                    salesProduct.setQuantity(quantity);
+                    salesProduct.setTotal(total);
+                }
+            }
+            salesProducts.add(salesProduct);
+        }
+        for(SalesProductResponse salesProduct : salesProducts) {
+            totalRevenue = totalRevenue.add(BigDecimal.valueOf(salesProduct.getTotal()));
+        }
+        return SalesReportResponse.builder()
+                .totalRevenue(totalRevenue)
+                .SalesDetails(salesProducts)
+                .build();
+    }
+    //doanh thu theo quy
+    private List<OutputInvoice> fetchOutputInvoiceByQuarter(SalesRevenueQuarterRequest request) {
         List<OutputInvoice> invoices=new ArrayList<>();
         switch (request.getQuarter()) {
             case 1:{
@@ -316,7 +469,31 @@ public class SalesReportServiceImpl implements SalesReportService {
         }
         return invoices;
     }
-    private List<OutputInvoice> fetchInvoices(SalesDetailReportRequest request) {
+    //tong tien nhap theo quy
+    private List<InputInvoice> fetchInputInvoiceByQuarter(SalesRevenueQuarterRequest request) {
+        List<InputInvoice> invoices=new ArrayList<>();
+        switch (request.getQuarter()) {
+            case 1:{
+                invoices=inputInvoiceRepo.findByCreationTimeBetween(getDate(request.getYear(), 1, "start"), getDate(request.getYear(), 1, "end"));
+                break;
+            }
+            case 2:{
+                invoices=inputInvoiceRepo.findByCreationTimeBetween(getDate(request.getYear(), 2, "start"), getDate(request.getYear(),2, "end"));
+                break;
+            }
+            case 3:{
+                invoices=inputInvoiceRepo.findByCreationTimeBetween(getDate(request.getYear(), 3, "start"), getDate(request.getYear(), 3, "end"));
+                break;
+            }
+            case 4:{
+                invoices=inputInvoiceRepo.findByCreationTimeBetween(getDate(request.getYear(), 4, "start"), getDate(request.getYear(), 4, "end"));
+                break;
+            }
+        }
+        return invoices;
+    }
+    //Doanh thu cac tieu chi
+    private List<OutputInvoice> fetchOutputInvoices(SalesDetailReportRequest request) {
         List<OutputInvoice> invoices;
 
         if (!request.getProductIds().isEmpty() && request.getCustomerIds().isEmpty() && request.getEmployeeIds().isEmpty()) {
@@ -344,11 +521,26 @@ public class SalesReportServiceImpl implements SalesReportService {
         }
         return invoices;
     }
-
+    //tong tien nhap theo cac tieu chi
+    private List<InputInvoice> fetchInputInvoices(InputInvoiceReportRequest request) {
+        if (!request.getProductIds().isEmpty() && request.getSupplierIds().isEmpty()) { // loc theo san pham
+            return inputInvoiceRepo.findByCreationTimeBetweenAndProductIds(
+                    request.getStartDate(), request.getEndDate(), request.getProductIds());
+        }else if(request.getProductIds().isEmpty() && !request.getSupplierIds().isEmpty()){ //loc theo nha cung cap
+            return inputInvoiceRepo.findByCreationTimeBetweenAndSupplierIds(
+                    request.getStartDate(), request.getEndDate(), request.getProductIds());
+        }else  if(!request.getProductIds().isEmpty()){ // loc theo san pham va nha cung cap
+            return inputInvoiceRepo.findByCreationTimeBetweenAndProductIdsAndSupplierIds(
+                    request.getStartDate(), request.getEndDate(), request.getProductIds(), request.getSupplierIds());
+        }else {
+            return inputInvoiceRepo.findByCreationTimeBetween(request.getStartDate(), request.getEndDate());
+        }
+    }
+    // Xuat file PDF doanh thu theo quy
    @Override
     public void generateReportQuaterToPdf(int year) throws Exception {
         // Tạo một đối tượng Document
-        com.itextpdf.text.Document document = new Document();
+        Document document = new Document();
 
         // Tạo một đối tượng PdfWriter
         PdfWriter.getInstance(document, new FileOutputStream("sales_quarter_report.pdf"));
@@ -364,7 +556,7 @@ public class SalesReportServiceImpl implements SalesReportService {
         title.setAlignment(Element.ALIGN_CENTER);
         document.add(title);
 
-// Thêm bảng biểu
+        // Thêm bảng biểu
         PdfPTable table = new PdfPTable(2);
         table.setWidthPercentage(100);
         table.setSpacingBefore(10);
@@ -406,10 +598,11 @@ public class SalesReportServiceImpl implements SalesReportService {
         // Đóng tài liệu
         document.close();
     }
+    // Xuat file PDF doanh thu theo khu vuc
     @Override
     public void generateReportRegionToPdf() throws Exception {
         // Tạo một đối tượng Document
-        com.itextpdf.text.Document document = new Document();
+        Document document = new Document();
 
         // Tạo một đối tượng PdfWriter
         PdfWriter.getInstance(document, new FileOutputStream("sales_region_report.pdf"));
@@ -465,9 +658,7 @@ public class SalesReportServiceImpl implements SalesReportService {
         cell = new PdfPCell(new Phrase(total + " VND",font2));
         table.addCell(cell);
 
-
         document.add(table);
-
         // Đóng tài liệu
         document.close();
     }

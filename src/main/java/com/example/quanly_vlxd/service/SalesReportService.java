@@ -1,6 +1,7 @@
 
 package com.example.quanly_vlxd.service;
 
+import com.example.quanly_vlxd.dto.request.InputInvoiceReportRequest;
 import com.example.quanly_vlxd.dto.request.SalesDetailReportRequest;
 import com.example.quanly_vlxd.dto.request.SalesRevenueByRegionRequest;
 import com.example.quanly_vlxd.dto.request.SalesRevenueQuarterRequest;
@@ -17,6 +18,8 @@ public interface SalesReportService {
     SalesReportResponse generateSalesReportByQuater(SalesRevenueQuarterRequest request);
     List<SalesQuarterResponse> allQuarterReport(int year);
     SalesReportResponse salesRevenueByRegion(SalesRevenueByRegionRequest request);
+    SalesReportResponse getTotalAmountInputInvoice(InputInvoiceReportRequest request);
+    SalesReportResponse getTotalAmountByQuater(SalesRevenueQuarterRequest request);
     void generateReportQuaterToPdf(int year) throws Exception;
     void generateReportRegionToPdf() throws Exception;
 }
