@@ -6,6 +6,7 @@ import com.example.quanly_vlxd.dto.request.SalesRevenueByRegionRequest;
 import com.example.quanly_vlxd.dto.request.SalesRevenueQuarterRequest;
 import com.example.quanly_vlxd.dto.response.*;
 import com.example.quanly_vlxd.entity.*;
+import com.example.quanly_vlxd.enums.InvoiceTypeEnums;
 import com.example.quanly_vlxd.repo.*;
 import com.example.quanly_vlxd.service.SalesReportService;
 import com.itextpdf.text.*;
@@ -22,7 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static com.example.quanly_vlxd.help.DateConvert.getDate;
+import static com.example.quanly_vlxd.help.DateConvert.*;
 import static com.example.quanly_vlxd.help.VnProvinceHelper.checkAddress;
 
 @Service
@@ -38,7 +39,8 @@ public class SalesReportServiceImpl implements SalesReportService {
     private final InputInvoiceRepo inputInvoiceRepo;
     private final InputInvoiceDetailRepo inputInvoiceDetailRepo;
     private final SupplierRepo supplierRepository;
-
+    private final PriceHistoryRepo priceHistoryRepo;
+    //chi tiet ban hang
     @Override
     public List<SalesDetailResponse> generateSalesReportDetailed(SalesDetailReportRequest request) {
         List<OutputInvoice> invoices = fetchOutputInvoices(request);
@@ -108,6 +110,7 @@ public class SalesReportServiceImpl implements SalesReportService {
                 .quantityBuy(detail.getQuantity())
                 .build();
     }
+    //doanh thu theo cac tieu chi
     @Override
     public SalesReportResponse generateSalesReportRevenue(SalesDetailReportRequest request) {
         //xóa trung lap
@@ -135,7 +138,7 @@ public class SalesReportServiceImpl implements SalesReportService {
     }
     //doanh thu tim theo quy
     @Override
-    public SalesReportResponse generateSalesReportByQuater(SalesRevenueQuarterRequest request) {
+    public SalesReportResponse generateSalesReportByQuarter(SalesRevenueQuarterRequest request) {
         List<OutputInvoice> invoices = fetchOutputInvoiceByQuarter(request);
         BigDecimal totalRevenue = BigDecimal.ZERO;
         List<OutputInvoiceDetail> details;
@@ -172,6 +175,54 @@ public class SalesReportServiceImpl implements SalesReportService {
         }
         return salesQuarterRespons;
     }
+    //doanh thu theo thang
+    @Override
+    public List<SalesMonthResponse> salesRevenueByMonth(int year) {
+        List<SalesMonthResponse> salesMonthResponses = new ArrayList<>();
+        for(int i = 1; i <= 12; i++) {
+            BigDecimal total = BigDecimal.ZERO;
+            for(OutputInvoice invoice : outputInvoiceRepository.findAll()) {
+                if(getMonth(invoice.getCreationTime())==i && getYear(invoice.getCreationTime())==year) {
+                    total = total.add(BigDecimal.valueOf(invoice.getTotalAmount()));
+                }
+            }
+            salesMonthResponses.add(SalesMonthResponse.builder()
+                    .month(i)
+                    .total(total)
+                    .build());
+        }
+        return salesMonthResponses;
+    }
+    //doanh thu theo san pham (2)
+    @Override
+    public SalesRevenueProductResponse salesRevenueProduct(int proId) {
+        Optional<Product> product = productRepository.findById(proId);
+        if(product.isEmpty()) return null;
+        double inputTotal = inputInvoiceDetailRepo.totalAmountInputInvoice(proId) == null ? 0 : inputInvoiceDetailRepo.totalAmountInputInvoice(proId);
+        double quantity = outputInvoiceDetailRepository.totalQuantityOutputInvoice(proId) == null ? 0 : outputInvoiceDetailRepository.totalQuantityOutputInvoice(proId);
+        double soldPrice = findOutputPrice(proId);
+        double outputTotal = quantity*soldPrice;
+        double revenue = outputTotal-inputTotal;
+        return SalesRevenueProductResponse.builder()
+                .proId(proId)
+                .proName(product.get().getName())
+                .inputTotal(inputTotal)
+                .outputTotal(outputTotal)
+                .revenue(revenue)
+                .build();
+    }
+    public double findOutputPrice(int proId) {
+        for(ProductPriceHistory priceHistory: priceHistoryRepo.findAll()) {
+            if (priceHistory.getProduct().getId() == proId
+                    && priceHistory.getInvoiceType().equals(InvoiceTypeEnums.OUTPUT)) {
+                if (priceHistory.getEndDate() == null) {
+                    return priceHistory.getPrice();
+                }
+            }
+        }
+        return 0;
+    }
+
     //Tim kiem theo khu vuc
     @Override
     public SalesReportResponse salesRevenueByRegion(SalesRevenueByRegionRequest request) {

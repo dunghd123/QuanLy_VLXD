@@ -4,9 +4,7 @@ import com.example.quanly_vlxd.dto.request.InputInvoiceReportRequest;
 import com.example.quanly_vlxd.dto.request.SalesDetailReportRequest;
 import com.example.quanly_vlxd.dto.request.SalesRevenueByRegionRequest;
 import com.example.quanly_vlxd.dto.request.SalesRevenueQuarterRequest;
-import com.example.quanly_vlxd.dto.response.SalesDetailResponse;
-import com.example.quanly_vlxd.dto.response.SalesQuarterResponse;
-import com.example.quanly_vlxd.dto.response.SalesReportResponse;
+import com.example.quanly_vlxd.dto.response.*;
 import com.example.quanly_vlxd.service.impl.SalesReportServiceImpl;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,28 +35,36 @@ public class SalesReportController {
        return salesReportService.generateSalesReportRevenue(request);
     }
     @GetMapping("sales-report-by-quater")
-        public SalesReportResponse generateSalesReportByQuater(@Valid @RequestBody SalesRevenueQuarterRequest request) {
-        return salesReportService.generateSalesReportByQuater(request);
+        public SalesReportResponse generateSalesReportByQuarter(@Valid @RequestBody SalesRevenueQuarterRequest request) {
+        return salesReportService.generateSalesReportByQuarter(request);
     }
     @GetMapping("total-revenue-by-quater")
     public List<SalesQuarterResponse> generateTotalRevenueAllQuater(@RequestParam int year) {
         return salesReportService.allQuarterReport(year);
     }
     @GetMapping("total-revenue-by-region")
-    public SalesReportResponse generateTotalRevenuebyRegion(@Valid @RequestBody SalesRevenueByRegionRequest request) {
+    public SalesReportResponse generateTotalRevenueByRegion(@Valid @RequestBody SalesRevenueByRegionRequest request) {
         return salesReportService.salesRevenueByRegion(request);
     }
     @GetMapping("total-amount-input-invoice")
     public SalesReportResponse getTotalAmountInputInvoice(@Valid @RequestBody InputInvoiceReportRequest request) {
         return salesReportService.getTotalAmountInputInvoice(request);
     }
+    @GetMapping("sales-revenue-by-month")
+    public List<SalesMonthResponse> getTotalAmountByMonth(@RequestParam int year) {
+        return salesReportService.salesRevenueByMonth(year);
+    }
     @GetMapping("total-amount-by-quater")
-    public SalesReportResponse getTotalAmountByQuater(@Valid @RequestBody SalesRevenueQuarterRequest request) {
+    public SalesReportResponse getTotalAmountByQuarter(@Valid @RequestBody SalesRevenueQuarterRequest request) {
         return salesReportService.getTotalAmountByQuater(request);
+    }
+    @GetMapping("sales-revenue-by-product")
+    public SalesRevenueProductResponse salesRevenueProduct(@RequestParam int proId) {
+        return salesReportService.salesRevenueProduct(proId);
     }
 
     @GetMapping("generate-sales-report-to-Pdf-by-quater")
-    public void generateSalesReportByQuater(@RequestParam int year) throws Exception {
+    public void generateSalesReportByQuarter(@RequestParam int year) throws Exception {
         salesReportService.generateReportQuaterToPdf(year);
     }
     @GetMapping("generate-sales-report-to-Pdf-by-region")

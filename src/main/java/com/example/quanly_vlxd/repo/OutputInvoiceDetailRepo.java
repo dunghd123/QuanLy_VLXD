@@ -17,5 +17,8 @@ public interface OutputInvoiceDetailRepo extends JpaRepository<OutputInvoiceDeta
     @Query(value = "select * from output_invoice_details o where o.pro_id in ?1", nativeQuery = true)
     List<OutputInvoiceDetail> filterByProduct(List<Integer> productIds);
 
+    @Query(value = "select sum(o.oid_quantity) from output_invoice_details o where o.pro_id = ?1", nativeQuery = true)
+    Double totalQuantityOutputInvoice(int proId);
+
 
 }
