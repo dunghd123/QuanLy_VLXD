@@ -198,16 +198,16 @@ public class SalesReportServiceImpl implements SalesReportService {
     public SalesRevenueProductResponse salesRevenueProduct(int proId) {
         Optional<Product> product = productRepository.findById(proId);
         if(product.isEmpty()) return null;
-        double inputTotal = inputInvoiceDetailRepo.totalAmountInputInvoice(proId) == null ? 0 : inputInvoiceDetailRepo.totalAmountInputInvoice(proId);
-        double quantity = outputInvoiceDetailRepository.totalQuantityOutputInvoice(proId) == null ? 0 : outputInvoiceDetailRepository.totalQuantityOutputInvoice(proId);
-        double soldPrice = findOutputPrice(proId);
-        double outputTotal = quantity*soldPrice;
-        double revenue = outputTotal-inputTotal;
+        double quantityBuy = inputInvoiceDetailRepo.totalQuantityInputInvoice(proId) == null ? 0 : inputInvoiceDetailRepo.totalQuantityInputInvoice(proId);
+        double quantitySold = outputInvoiceDetailRepository.totalQuantityOutputInvoice(proId) == null ? 0 : outputInvoiceDetailRepository.totalQuantityOutputInvoice(proId);
+        double inputPrice= findInputPrice(proId);
+        double outputPrice = findOutputPrice(proId);
+        double revenue = quantitySold*outputPrice-quantityBuy*inputPrice;
         return SalesRevenueProductResponse.builder()
                 .proId(proId)
                 .proName(product.get().getName())
-                .inputTotal(inputTotal)
-                .outputTotal(outputTotal)
+                .inputTotal(quantityBuy*inputPrice)
+                .outputTotal(quantitySold*outputPrice)
                 .revenue(revenue)
                 .build();
     }
@@ -215,6 +215,17 @@ public class SalesReportServiceImpl implements SalesReportService {
         for(ProductPriceHistory priceHistory: priceHistoryRepo.findAll()) {
             if (priceHistory.getProduct().getId() == proId
                     && priceHistory.getInvoiceType().equals(InvoiceTypeEnums.OUTPUT)) {
+                if (priceHistory.getEndDate() == null) {
+                    return priceHistory.getPrice();
+                }
+            }
+        }
+        return 0;
+    }
+    public double findInputPrice(int proId) {
+        for(ProductPriceHistory priceHistory: priceHistoryRepo.findAll()) {
+            if (priceHistory.getProduct().getId() == proId
+                    && priceHistory.getInvoiceType().equals(InvoiceTypeEnums.INPUT)) {
                 if (priceHistory.getEndDate() == null) {
                     return priceHistory.getPrice();
                 }
@@ -258,12 +269,11 @@ public class SalesReportServiceImpl implements SalesReportService {
 
         //tinh total amount
         BigDecimal totalRevenue = BigDecimal.ZERO;
-        List<InputInvoiceDetail> details = new ArrayList<>();
         List<SalesProductResponse> salesProducts = new ArrayList<>();
         List<SupplierDetailResonse> salesCustomers = new ArrayList<>();
         //Loc theo cac tieu chi
         if(!request.getProductIds().isEmpty() && request.getSupplierIds().isEmpty()) {// Tim theo product
-            return filterByProductInput(details,uniqueProductIds, request,salesProducts,totalRevenue);
+            return filterByProductInput(uniqueProductIds, request,salesProducts,totalRevenue);
         }
         else if(request.getProductIds().isEmpty() && !request.getSupplierIds().isEmpty()) { // Tim theo supplier
             return filterBySupplier(request,uniqueSupplierIds,salesCustomers,totalRevenue);
@@ -406,7 +416,7 @@ public class SalesReportServiceImpl implements SalesReportService {
                             .suppId(supplier.get().getId())
                             .suppName(supplier.get().getName())
                             .inputInvoiceId(invoice.getId())
-                            .total(invoice.getTotalAmount())
+                            .total(String.format("%.0f", invoice.getTotalAmount())+" VND")
                             .build());
                 }
             }
@@ -460,12 +470,11 @@ public class SalesReportServiceImpl implements SalesReportService {
     }
     //tong tien nhap theo san pham
     private SalesReportResponse filterByProductInput(
-            List<InputInvoiceDetail> details,
             List<Integer> uniqueProductIds,
             InputInvoiceReportRequest request,
             List<SalesProductResponse> salesProducts,
             BigDecimal totalRevenue) {
-        details=inputInvoiceDetailRepo.filterByProduct(request.getProductIds());
+        List<InputInvoice> invoices = fetchInputInvoices(request);
         for(Integer i : uniqueProductIds) {
             Optional<Product> product = productRepository.findById(i);
             if(product.isEmpty()) {
@@ -479,6 +488,11 @@ public class SalesReportServiceImpl implements SalesReportService {
                     .quantity(0)
                     .total(0)
                     .build();
+            List<Integer> inputInvoiceIds = new ArrayList<>();
+            for (InputInvoice invoice : invoices) {
+                inputInvoiceIds.add(invoice.getId());
+            }
+            List<InputInvoiceDetail> details=inputInvoiceDetailRepo.findByProductIDAndInputInvoiceID(inputInvoiceIds,i);
             for(InputInvoiceDetail detail : details) {
                 if(i.equals(detail.getProduct().getId())) {
                     quantity += detail.getQuantity();
@@ -579,10 +593,7 @@ public class SalesReportServiceImpl implements SalesReportService {
                     request.getStartDate(), request.getEndDate(), request.getProductIds());
         }else if(request.getProductIds().isEmpty() && !request.getSupplierIds().isEmpty()){ //loc theo nha cung cap
             return inputInvoiceRepo.findByCreationTimeBetweenAndSupplierIds(
-                    request.getStartDate(), request.getEndDate(), request.getProductIds());
-        }else  if(!request.getProductIds().isEmpty()){ // loc theo san pham va nha cung cap
-            return inputInvoiceRepo.findByCreationTimeBetweenAndProductIdsAndSupplierIds(
-                    request.getStartDate(), request.getEndDate(), request.getProductIds(), request.getSupplierIds());
+                    request.getStartDate(), request.getEndDate(), request.getSupplierIds());
         }else {
             return inputInvoiceRepo.findByCreationTimeBetween(request.getStartDate(), request.getEndDate());
         }

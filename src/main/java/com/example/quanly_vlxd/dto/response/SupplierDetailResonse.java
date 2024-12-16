@@ -11,5 +11,5 @@ public class SupplierDetailResonse {
     private int suppId;
     private String suppName;
     private int inputInvoiceId;
-    private double total;
+    private String total;
 }

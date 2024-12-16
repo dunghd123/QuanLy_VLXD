@@ -37,6 +37,30 @@ public class InputInvoiceServiceImpl implements InputInvoiceService  {
         }
         return 0;
     }
+    public void updateUnitPrice(){
+        for(InputInvoice inputInvoice: inputInvoiceRepo.findAll()){
+            for(InputInvoiceDetail iid: inputInvoiceDetailRepo.findAll()){
+                if(iid.getInputInvoice().getId() == inputInvoice.getId()){
+                    iid.setUnitPrice(getInputPriceByProductID(iid.getProduct().getId(), inputInvoice.getCreationTime()));
+                    inputInvoiceDetailRepo.save(iid);
+                }
+            }
+        }
+        for(InputInvoiceDetail iid: inputInvoiceDetailRepo.findAll()){
+            iid.setAmount(iid.getQuantity() * iid.getUnitPrice());
+            inputInvoiceDetailRepo.save(iid);
+        }
+        for(InputInvoice inputInvoice: inputInvoiceRepo.findAll()){
+            double total=0.0;
+            for(InputInvoiceDetail iid: inputInvoiceDetailRepo.findAll()){
+                if(iid.getInputInvoice().getId() == inputInvoice.getId()){
+                    total += iid.getAmount();
+                }
+            }
+            inputInvoice.setTotalAmount(total);
+            inputInvoiceRepo.save(inputInvoice);
+        }
+    }
     @Override
     public MessageResponse addInputInvoice(InputInvoiceRequest inputInvoiceRequest) {
         Optional<Supplier> checkSup = supplierRepo.findById(inputInvoiceRequest.getSupID());
