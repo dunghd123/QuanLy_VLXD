@@ -2,6 +2,8 @@ package com.example.quanly_vlxd.dto.response;
 
 import lombok.*;
 
+import java.math.BigDecimal;
+
 @Getter
 @Setter
 @AllArgsConstructor
@@ -11,5 +13,5 @@ public class SalesProductResponse {
     private int proId;
     private String proName;
     private double quantity;
-    private double total;
+    private BigDecimal total;
 }

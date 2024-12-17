@@ -10,7 +10,7 @@ import lombok.*;
 public class SalesRevenueProductResponse {
     private int proId;
     private String proName;
-    private double inputTotal;
-    private double outputTotal;
-    private double revenue;
+    private String inputTotal;
+    private String outputTotal;
+    private String revenue;
 }

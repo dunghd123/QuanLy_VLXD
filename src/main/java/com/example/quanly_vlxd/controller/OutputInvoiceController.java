@@ -30,6 +30,10 @@ public class OutputInvoiceController {
     public ResponseEntity<MessageResponse> updateOutputInvoice(@PathVariable(value = "id") int id){
         return new ResponseEntity<>(outputInvoiceService.updateOutputInvoice(id), HttpStatus.OK);
     }
+    @PutMapping("update-oi")
+    public void updateOI(){
+        outputInvoiceService.updateOI();
+    }
 
     @DeleteMapping("delete-output-invoice/{id}")
     public ResponseEntity<MessageResponse> deleteOutputInvoice(@PathVariable(value = "id") int id){

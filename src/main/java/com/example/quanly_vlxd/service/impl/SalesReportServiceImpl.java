@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.FileOutputStream;
 import java.math.BigDecimal;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -179,6 +180,7 @@ public class SalesReportServiceImpl implements SalesReportService {
     @Override
     public List<SalesMonthResponse> salesRevenueByMonth(int year) {
         List<SalesMonthResponse> salesMonthResponses = new ArrayList<>();
+
         for(int i = 1; i <= 12; i++) {
             BigDecimal total = BigDecimal.ZERO;
             for(OutputInvoice invoice : outputInvoiceRepository.findAll()) {
@@ -196,6 +198,7 @@ public class SalesReportServiceImpl implements SalesReportService {
     //doanh thu theo san pham (2)
     @Override
     public SalesRevenueProductResponse salesRevenueProduct(int proId) {
+        DecimalFormat format= new DecimalFormat("#,###");
         Optional<Product> product = productRepository.findById(proId);
         if(product.isEmpty()) return null;
         double quantityBuy = inputInvoiceDetailRepo.totalQuantityInputInvoice(proId) == null ? 0 : inputInvoiceDetailRepo.totalQuantityInputInvoice(proId);
@@ -206,9 +209,9 @@ public class SalesReportServiceImpl implements SalesReportService {
         return SalesRevenueProductResponse.builder()
                 .proId(proId)
                 .proName(product.get().getName())
-                .inputTotal(quantityBuy*inputPrice)
-                .outputTotal(quantitySold*outputPrice)
-                .revenue(revenue)
+                .inputTotal(format.format(quantityBuy*inputPrice)+" VND")
+                .outputTotal(format.format(quantitySold*outputPrice)+ " VND")
+                .revenue(format.format(revenue)+" VND")
                 .build();
     }
     public double findOutputPrice(int proId) {
@@ -343,6 +346,7 @@ public class SalesReportServiceImpl implements SalesReportService {
             List<SalesEmployeeResponse> salesEmployee,
             BigDecimal totalRevenue) {
         List<OutputInvoice> invoices = fetchOutputInvoices(request);
+        DecimalFormat format= new DecimalFormat("#,###");
         for(Integer i : uniqueEmployeeIds) {
             Optional<Employee> employee = employeeRepository.findById(i);
             if (employee.isEmpty()) {
@@ -354,7 +358,7 @@ public class SalesReportServiceImpl implements SalesReportService {
                             .empId(employee.get().getId())
                             .empName(employee.get().getName())
                             .outputInvoiceId(invoice.getId())
-                            .total(invoice.getTotalAmount())
+                            .total(format.format(invoice.getTotalAmount())+ " VND")
                             .build());
                 }
             }
@@ -374,6 +378,7 @@ public class SalesReportServiceImpl implements SalesReportService {
             List<SalesCustomerResponse> salesCustomers,
             BigDecimal totalRevenue) {
         List<OutputInvoice> invoices = fetchOutputInvoices(request);
+        DecimalFormat format= new DecimalFormat("#,###");
         for(Integer i : uniqueCustomerIds) {
             Optional<Customer> customer = customerRepository.findById(i);
             if(customer.isEmpty()) {
@@ -385,7 +390,7 @@ public class SalesReportServiceImpl implements SalesReportService {
                             .cusId(customer.get().getId())
                             .cusName(customer.get().getName())
                             .outputInvoiceId(invoice.getId())
-                            .total(invoice.getTotalAmount())
+                            .total(format.format(BigDecimal.valueOf(invoice.getTotalAmount()))+ " VND")
                             .build());
                 }
             }
@@ -443,17 +448,17 @@ public class SalesReportServiceImpl implements SalesReportService {
                 return null;
             }
             double quantity = 0.0;
-            double total=0.0;
+            BigDecimal total= BigDecimal.ZERO;
             SalesProductResponse salesProduct  = SalesProductResponse.builder()
                     .proId(product.get().getId())
                     .proName(product.get().getName())
                     .quantity(0)
-                    .total(0)
+                    .total(BigDecimal.ZERO)
                     .build();
             for(OutputInvoiceDetail detail : details) {
                 if(i.equals(detail.getPro_Id())) {
                     quantity += detail.getQuantity();
-                    total += detail.getAmount();
+                    total =total.add(BigDecimal.valueOf(detail.getAmount()));
                     salesProduct.setQuantity(quantity);
                     salesProduct.setTotal(total);
                 }
@@ -461,7 +466,7 @@ public class SalesReportServiceImpl implements SalesReportService {
             salesProducts.add(salesProduct);
         }
         for(SalesProductResponse salesProduct : salesProducts) {
-            totalRevenue = totalRevenue.add(BigDecimal.valueOf(salesProduct.getTotal()));
+            totalRevenue = totalRevenue.add(salesProduct.getTotal());
         }
         return SalesReportResponse.builder()
                 .totalRevenue(totalRevenue)
@@ -486,7 +491,7 @@ public class SalesReportServiceImpl implements SalesReportService {
                     .proId(product.get().getId())
                     .proName(product.get().getName())
                     .quantity(0)
-                    .total(0)
+                    .total(BigDecimal.ZERO)
                     .build();
             List<Integer> inputInvoiceIds = new ArrayList<>();
             for (InputInvoice invoice : invoices) {
@@ -498,13 +503,13 @@ public class SalesReportServiceImpl implements SalesReportService {
                     quantity += detail.getQuantity();
                     total += detail.getAmount();
                     salesProduct.setQuantity(quantity);
-                    salesProduct.setTotal(total);
+                    salesProduct.setTotal(BigDecimal.valueOf(total));
                 }
             }
             salesProducts.add(salesProduct);
         }
         for(SalesProductResponse salesProduct : salesProducts) {
-            totalRevenue = totalRevenue.add(BigDecimal.valueOf(salesProduct.getTotal()));
+            totalRevenue = totalRevenue.add(salesProduct.getTotal());
         }
         return SalesReportResponse.builder()
                 .totalRevenue(totalRevenue)
@@ -601,6 +606,7 @@ public class SalesReportServiceImpl implements SalesReportService {
     // Xuat file PDF doanh thu theo quy
    @Override
     public void generateReportQuaterToPdf(int year) throws Exception {
+       DecimalFormat format= new DecimalFormat("#,###");
         // Tạo một đối tượng Document
         Document document = new Document();
 
@@ -646,13 +652,13 @@ public class SalesReportServiceImpl implements SalesReportService {
         for (SalesQuarterResponse response : salesQuarterRespons) {
             cell = new PdfPCell(new Phrase(String.valueOf(response.getQuarter()), font2));
             table.addCell(cell);
-            cell = new PdfPCell(new Phrase(response.getTotal().toString() + " VND",font2));
+            cell = new PdfPCell(new Phrase(format.format(response.getTotal()) + " VND",font2));
             table.addCell(cell);
         }
         BigDecimal total = allQuarterReport(year).stream().map(SalesQuarterResponse::getTotal).reduce(BigDecimal.ZERO, BigDecimal::add);
         cell = new PdfPCell(new Phrase("Tổng doanh thu", font2));
         table.addCell(cell);
-        cell = new PdfPCell(new Phrase(total+ " VND",font2));
+        cell = new PdfPCell(new Phrase(format.format(total)+ " VND",font2));
         table.addCell(cell);
 
         document.add(table);
@@ -663,6 +669,7 @@ public class SalesReportServiceImpl implements SalesReportService {
     // Xuat file PDF doanh thu theo khu vuc
     @Override
     public void generateReportRegionToPdf() throws Exception {
+        DecimalFormat format= new DecimalFormat("#,###");
         // Tạo một đối tượng Document
         Document document = new Document();
 
@@ -711,13 +718,13 @@ public class SalesReportServiceImpl implements SalesReportService {
         for (SalesRegionResponse response : salesRegionResponses) {
             cell = new PdfPCell(new Phrase(response.getRegion(),font2));
             table.addCell(cell);
-            cell = new PdfPCell(new Phrase(response.getTotalRevenue().toString() + " VND"));
+            cell = new PdfPCell(new Phrase(format.format(response.getTotalRevenue()) + " VND"));
             table.addCell(cell);
         }
         BigDecimal total= salesRegionResponses.stream().map(SalesRegionResponse::getTotalRevenue).reduce(BigDecimal.ZERO, BigDecimal::add);
         cell = new PdfPCell(new Phrase("Tổng",font2));
         table.addCell(cell);
-        cell = new PdfPCell(new Phrase(total + " VND",font2));
+        cell = new PdfPCell(new Phrase(format.format(total) + " VND",font2));
         table.addCell(cell);
 
         document.add(table);

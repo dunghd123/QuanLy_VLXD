@@ -36,6 +36,39 @@ public class OutputInvoiceServiceImpl implements OutputInvoiceService {
         }
         return 0;
     }
+    public void updateOI(){
+        for(Customer cus: customerRepo.findAll()){
+            for(OutputInvoice o: outputInvoiceRepo.findAll()){
+                if(o.getCustomer().getId()==cus.getId()){
+                    o.setShipAddress(cus.getAddress());
+                    outputInvoiceRepo.save(o);
+                }
+            }
+        }
+        for(OutputInvoice o: outputInvoiceRepo.findAll()){
+            for(OutputInvoiceDetail oid : outputInvoiceDetailRepo.findAll()){
+                    if(oid.getOutputInvoice().getId()== o.getId()){
+                        oid.setUnitPrice(getOutputPriceByProductID(oid.getPro_Id(),o.getCreationTime()));
+                        outputInvoiceDetailRepo.save(oid);
+                    }
+            }
+        }
+        for(OutputInvoiceDetail oid : outputInvoiceDetailRepo.findAll()){
+            oid.setAmount(oid.getQuantity()*oid.getUnitPrice());
+            outputInvoiceDetailRepo.save(oid);
+        }
+        for(OutputInvoice o: outputInvoiceRepo.findAll()){
+            double total=0.0;
+            for(OutputInvoiceDetail oid: outputInvoiceDetailRepo.findAll()){
+                if(oid.getOutputInvoice().getId()==o.getId()){
+                    total+=oid.getAmount();
+                }
+            }
+            o.setTotalAmount(total);
+            outputInvoiceRepo.save(o);
+        }
+    }
+
     public OutputInvoiceDetail createOutputInvoiceDetail(OutputInvoiceDetailRequest outputInvoiceDetailRequest,double quantity, double price, OutputInvoice savedOutputInvoice,Warehouse warehouse) {
         return OutputInvoiceDetail.builder()
                 .outputInvoice(savedOutputInvoice)

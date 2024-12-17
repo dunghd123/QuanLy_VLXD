@@ -11,5 +11,5 @@ public class SalesCustomerResponse {
     private int cusId;
     private String cusName;
     private int outputInvoiceId;
-    private double total;
+    private String total;
 }
