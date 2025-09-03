@@ -48,5 +48,4 @@ public class CustomerController {
     public Map<String, String> handleValidationExceptions(MethodArgumentNotValidException ex) {
         return getMapErrors(ex);
     }
-
 }

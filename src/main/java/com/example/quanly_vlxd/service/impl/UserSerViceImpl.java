@@ -5,6 +5,7 @@ import com.example.quanly_vlxd.dto.request.ChangePasswordRequest;
 import com.example.quanly_vlxd.dto.request.LoginRequest;
 import com.example.quanly_vlxd.dto.response.MessageResponse;
 import com.example.quanly_vlxd.dto.response.TokenResponse;
+import com.example.quanly_vlxd.dto.response.UserResponse;
 import com.example.quanly_vlxd.entity.RefreshToken;
 import com.example.quanly_vlxd.entity.Role;
 import com.example.quanly_vlxd.entity.User;
@@ -14,13 +15,15 @@ import com.example.quanly_vlxd.repo.RefreshTokenRepo;
 import com.example.quanly_vlxd.repo.RoleRepo;
 import com.example.quanly_vlxd.repo.UserRepo;
 import com.example.quanly_vlxd.service.UserService;
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -46,6 +49,7 @@ public class UserSerViceImpl implements UserService {
         String jwtToken= jwtTokenProvider.generateToken(new UserCustomDetail(userCurrent));
         String jwtRefreshToken= jwtTokenProvider.generateRefreshToken(new UserCustomDetail(userCurrent));
 
+        refreshTokenRepo.deleteByUser(userCurrent);
         RefreshToken refreshToken= new RefreshToken();
         refreshToken.setUser(userCurrent);
         refreshToken.setToken(jwtRefreshToken);
@@ -61,8 +65,27 @@ public class UserSerViceImpl implements UserService {
     }
 
     @Override
+    public TokenResponse refreshToken(String refreshToken) {
+        RefreshToken storedToken = refreshTokenRepo.findByToken(refreshToken)
+                .orElseThrow(() -> new RuntimeException("Invalid refresh token"));
+
+        if (storedToken.getExpiredTime().before(new Date())) {
+            throw new RuntimeException("Refresh token expired");
+        }
+
+        User user = storedToken.getUser();
+        String newAccessToken = jwtTokenProvider.generateToken(new UserCustomDetail(user));
+
+        return TokenResponse.builder()
+                .accessToken(newAccessToken)
+                .refreshToken(refreshToken)
+                .role(user.getRole().getRoleName().name())
+                .build();
+    }
+
+    @Override
     public MessageResponse addUser(AddUserRequest addUserRequest) {
-        Optional<Role> findbyRole= roleRepo.findByRoleName(addUserRequest.getRole().getRoleName().name());
+        Optional<Role> findbyRole= roleRepo.findByRoleName(addUserRequest.getRole().name());
         for(User user: userRepo.findAll()){
             if(user.getUserName().equals(addUserRequest.getUsername())){
                 return MessageResponse.builder().message("User name already exists!!").build();
@@ -120,5 +143,26 @@ public class UserSerViceImpl implements UserService {
             }
         }
         return MessageResponse.builder().message("Change Password Failed!!!").build();
+    }
+
+    @Override
+    public List<UserResponse> getAllUserActive() {
+        List<User> employees = userRepo.findAllEmployee();
+        List<UserResponse> empResponse= new ArrayList<>();
+        if(!employees.isEmpty()){
+            for(User user: employees){
+                UserResponse userResponse= UserResponse
+                        .builder()
+                        .userName(user.getUserName())
+                        .fullName(user.getEmployee().getName())
+                        .phone(user.getEmployee().getPhoneNum())
+                        .gender(user.getEmployee().getGender())
+                        .status(user.isStatus())
+                        .role(user.getRole().getRoleName().name())
+                        .build();
+                empResponse.add(userResponse);
+            }
+        }
+        return empResponse;
     }
 }

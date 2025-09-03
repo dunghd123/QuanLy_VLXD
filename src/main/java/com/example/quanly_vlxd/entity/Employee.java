@@ -6,6 +6,7 @@ import lombok.*;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.sql.Date;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -54,4 +55,12 @@ public class Employee {
     @OneToMany(mappedBy = "employee")
     @JsonIgnoreProperties(value = "employee")
     Set<OutputInvoice> outputInvoices;
+
+    //self-join
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "manager_id")
+    private Employee manager;
+
+    @OneToMany(mappedBy = "manager", cascade = CascadeType.ALL)
+    private List<Employee> subordinates;
 }
