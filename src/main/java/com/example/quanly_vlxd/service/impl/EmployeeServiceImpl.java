@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -35,7 +36,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         if(findbyUsername.get().getRole().getId() != 1){
             return MessageResponse.builder().message("User is not employee account!!").build();
         }
-        if(!findbyUsername.get().isIsActive()){
+        if(!findbyUsername.get().isActive()){
             return MessageResponse.builder().message("User is not active!!").build();
         }
         if(!employeeRepo.findAll().isEmpty()){
@@ -49,14 +50,14 @@ public class EmployeeServiceImpl implements EmployeeService {
             }
         }
         Employee employee = Employee.builder()
-                .Name(empRequest.getName())
-                .Dob(empRequest.getDob())
-                .Gender(empRequest.getGender())
-                .PhoneNum(empRequest.getPhoneNum())
-                .Address(empRequest.getAddress())
-                .Description(empRequest.getDescription())
+                .name(empRequest.getName())
+                .dob(empRequest.getDob())
+                .gender(empRequest.getGender())
+                .phoneNum(empRequest.getPhoneNum())
+                .address(empRequest.getAddress())
+                .description(empRequest.getDescription())
                 .user(findbyUsername.get())
-                .IsActive(true)
+                .isActive(true)
                 .build();
         employeeRepo.save(employee);
         return MessageResponse.builder().message("Add employee successfully!!").build();
@@ -121,7 +122,7 @@ public class EmployeeServiceImpl implements EmployeeService {
                 OutputInvoiceRepo.save(outputInvoice);
             }
         }
-        employee.get().setIsActive(false);
+        employee.get().setActive(false);
         employeeRepo.save(employee.get());
         return MessageResponse.builder().message("Delete employee with id: "+id+" successfully!!").build();
     }
@@ -131,6 +132,12 @@ public class EmployeeServiceImpl implements EmployeeService {
         Pageable pageable = PageRequest.of(page, size);
         return employeeRepo.getAll(pageable).map(this::convertToDTO);
     }
+
+    @Override
+    public List<EmpResponse> getAllManager() {
+        return employeeRepo.getAllManager().stream().map(this::convertToDTO).collect(Collectors.toList());
+    }
+
     private EmpResponse convertToDTO(Employee employee) {
         return EmpResponse.builder()
                 .id(employee.getId())
@@ -140,8 +147,7 @@ public class EmployeeServiceImpl implements EmployeeService {
                 .address(employee.getAddress())
                 .phoneNum(employee.getPhoneNum())
                 .description(employee.getDescription())
-                .username(employee.getUser().getUserName())
-                .isActive(employee.isIsActive())
+                .isActive(employee.isActive())
                 .build();
     }
 }

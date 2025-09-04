@@ -6,6 +6,7 @@ import com.example.quanly_vlxd.dto.request.LoginRequest;
 import com.example.quanly_vlxd.dto.response.MessageResponse;
 import com.example.quanly_vlxd.dto.response.TokenResponse;
 import com.example.quanly_vlxd.dto.response.UserResponse;
+import org.springframework.http.ResponseEntity;
 
 
 import java.io.UnsupportedEncodingException;
@@ -14,7 +15,7 @@ import java.util.List;
 public interface UserService {
     TokenResponse login(LoginRequest loginRequest);
     TokenResponse refreshToken(String refreshToken);
-    MessageResponse addUser(AddUserRequest addUserRequest) throws UnsupportedEncodingException;
+    ResponseEntity<MessageResponse> addUser(AddUserRequest addUserRequest) throws UnsupportedEncodingException;
     MessageResponse logout(String username);
 
     MessageResponse changePass(ChangePasswordRequest changePasswordRequest);

@@ -21,15 +21,15 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id")
-    private int ID;
+    private int id;
     @Column(name = "username",nullable = false,unique = true)
-    private String UserName;
+    private String userName;
     @Column(name = "password",nullable = false)
-    private String Password;
+    private String password;
     @Column(name = "user_status",nullable = false)
-    private boolean Status;
+    private boolean status;
     @Column(name = "isactive")
-    private boolean IsActive;
+    private boolean isActive;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "role_id",foreignKey = @ForeignKey(name = "FK_USER_ROLE"))

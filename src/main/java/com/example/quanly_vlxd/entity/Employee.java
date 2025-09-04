@@ -20,29 +20,29 @@ public class Employee {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "emp_id")
-    private int Id;
+    private int id;
 
     @Column(name = "emp_name",nullable = false)
-    private String Name;
+    private String name;
 
     @Column(name = "emp_gender",nullable = false)
-    private String Gender;
+    private String gender;
 
     @Column(name = "emp_dob",nullable = false)
     @DateTimeFormat(pattern = "yyyy-MM-dd")
-    private Date Dob;
+    private Date dob;
 
     @Column(name = "emp_address",nullable = false)
-    private String Address;
+    private String address;
 
     @Column(name = "emp_phonenum",nullable = false,unique = true)
-    private String PhoneNum;
+    private String phoneNum;
 
     @Column(name = "emp_description")
-    private String Description;
+    private String description;
 
     @Column(name = "isactive")
-    private boolean IsActive;
+    private boolean isActive;
 
     @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id", referencedColumnName = "user_id", foreignKey = @ForeignKey(name = "FK_USER"))

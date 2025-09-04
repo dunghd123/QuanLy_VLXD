@@ -6,20 +6,25 @@ import com.example.quanly_vlxd.dto.request.LoginRequest;
 import com.example.quanly_vlxd.dto.response.MessageResponse;
 import com.example.quanly_vlxd.dto.response.TokenResponse;
 import com.example.quanly_vlxd.dto.response.UserResponse;
+import com.example.quanly_vlxd.entity.Employee;
 import com.example.quanly_vlxd.entity.RefreshToken;
 import com.example.quanly_vlxd.entity.Role;
 import com.example.quanly_vlxd.entity.User;
 import com.example.quanly_vlxd.jwt.JwtTokenProvider;
 import com.example.quanly_vlxd.model.UserCustomDetail;
+import com.example.quanly_vlxd.repo.EmployeeRepo;
 import com.example.quanly_vlxd.repo.RefreshTokenRepo;
 import com.example.quanly_vlxd.repo.RoleRepo;
 import com.example.quanly_vlxd.repo.UserRepo;
 import com.example.quanly_vlxd.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -30,6 +35,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class UserSerViceImpl implements UserService {
     private final UserRepo userRepo;
+    private final EmployeeRepo employeeRepo;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final RefreshTokenRepo refreshTokenRepo;
@@ -67,10 +73,10 @@ public class UserSerViceImpl implements UserService {
     @Override
     public TokenResponse refreshToken(String refreshToken) {
         RefreshToken storedToken = refreshTokenRepo.findByToken(refreshToken)
-                .orElseThrow(() -> new RuntimeException("Invalid refresh token"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid refresh token"));
 
         if (storedToken.getExpiredTime().before(new Date())) {
-            throw new RuntimeException("Refresh token expired");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Refresh token expired");
         }
 
         User user = storedToken.getUser();
@@ -78,32 +84,48 @@ public class UserSerViceImpl implements UserService {
 
         return TokenResponse.builder()
                 .accessToken(newAccessToken)
-                .refreshToken(refreshToken)
+                .refreshToken(refreshToken) // có thể generate mới nếu muốn an toàn hơn
                 .role(user.getRole().getRoleName().name())
                 .build();
     }
 
     @Override
-    public MessageResponse addUser(AddUserRequest addUserRequest) {
-        Optional<Role> findbyRole= roleRepo.findByRoleName(addUserRequest.getRole().name());
-        for(User user: userRepo.findAll()){
-            if(user.getUserName().equals(addUserRequest.getUsername())){
-                return MessageResponse.builder().message("User name already exists!!").build();
-            }
+    public ResponseEntity<MessageResponse> addUser(AddUserRequest addUserRequest) {
+        boolean isUsernameExist= userRepo.existsByUserName(addUserRequest.getUsername());
+        if(isUsernameExist){
+            return ResponseEntity
+                    .status(HttpStatus.CONFLICT)
+                    .body(new MessageResponse("Username already exists!"));
         }
-        if(findbyRole.isEmpty()){
-            return MessageResponse.builder().message("Role does not exist!!").build();
+        boolean isPhoneExist= employeeRepo.existsByPhoneNum(addUserRequest.getPhone());
+        if(isPhoneExist){
+            return ResponseEntity
+                    .status(HttpStatus.CONFLICT)
+                    .body(new MessageResponse("Phone already exists!"));
         }
+        Role role= roleRepo.findByRoleName(addUserRequest.getRole().name()).get();
         User user= User
                 .builder()
-                .UserName(addUserRequest.getUsername())
-                .Password(passwordEncoder.encode(addUserRequest.getPassword()))
-                .IsActive(true)
-                .Status(false)
-                .role(findbyRole.get())
+                .userName(addUserRequest.getUsername())
+                .password(passwordEncoder.encode(addUserRequest.getPassword()))
+                .isActive(true)
+                .status(false)
+                .role(role)
                 .build();
         userRepo.save(user);
-        return MessageResponse.builder().message("Create a new user successfully!!!").build();
+        Employee employee = Employee
+                .builder()
+                .name(addUserRequest.getFullName())
+                .address(addUserRequest.getAddress())
+                .phoneNum(addUserRequest.getPhone())
+                .dob(java.sql.Date.valueOf(addUserRequest.getDateOfBirth()))
+                .manager(employeeRepo.findById(addUserRequest.getManagerId()).get())
+                .user(user)
+                .build();
+        employeeRepo.save(employee);
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(new MessageResponse("User created successfully!"));
     }
 
     @Override
@@ -114,7 +136,7 @@ public class UserSerViceImpl implements UserService {
         }else {
             user.get().setStatus(false);
             for(RefreshToken refreshToken: refreshTokenRepo.findAll()){
-                if(refreshToken.getUser().getID()==user.get().getID()){
+                if(refreshToken.getUser().getId()==user.get().getId()){
                     refreshTokenRepo.delete(refreshToken);
                 }
             }

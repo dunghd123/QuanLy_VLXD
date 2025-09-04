@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 import static com.example.quanly_vlxd.help.MapErrors.getMapErrors;
@@ -19,6 +20,7 @@ import static com.example.quanly_vlxd.help.MapErrors.getMapErrors;
 @RestController
 @RequestMapping("/api/v1/employee/")
 @RequiredArgsConstructor
+@CrossOrigin("*")
 public class EmployeeController {
     private final EmployeeServiceImpl employeeServiceImpl;
 
@@ -37,6 +39,11 @@ public class EmployeeController {
     @GetMapping("getAllEmployee")
     public Page<EmpResponse> getAll(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size){
         return employeeServiceImpl.getAllEmployee(page,size);
+    }
+
+    @GetMapping("getAllManager")
+    public List<EmpResponse> getAllManager(){
+        return employeeServiceImpl.getAllManager();
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST) // Trả về mã 400 BAD_REQUEST

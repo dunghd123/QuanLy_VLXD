@@ -32,12 +32,13 @@ public class UserController {
         return new ResponseEntity<>(userSerVice.login(loginRequest), HttpStatus.OK);
     }
     @PostMapping("refresh-token")
-    public ResponseEntity<TokenResponse> refresh(@RequestParam String refreshToken) {
+    public ResponseEntity<TokenResponse> refresh(@RequestBody Map<String, String> request) {
+        String refreshToken = request.get("refreshToken");
         return ResponseEntity.ok(userSerVice.refreshToken(refreshToken));
     }
     @PostMapping("add-new-user")
     public ResponseEntity<MessageResponse> adduser(@Valid @RequestBody AddUserRequest addUserRequest) {
-        return new ResponseEntity<>(userSerVice.addUser(addUserRequest), HttpStatus.CREATED);
+        return userSerVice.addUser(addUserRequest);
     }
     @PutMapping("logout")
     public ResponseEntity<MessageResponse> logout(@RequestParam String username){

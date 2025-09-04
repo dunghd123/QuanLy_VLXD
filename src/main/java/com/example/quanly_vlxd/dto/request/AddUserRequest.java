@@ -1,5 +1,6 @@
 package com.example.quanly_vlxd.dto.request;
 
+import com.example.quanly_vlxd.enums.GenderEnums;
 import com.example.quanly_vlxd.enums.RoleEnums;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -13,8 +14,10 @@ public class AddUserRequest {
     private String password;
     private String fullName;
     private String address;
+    private String phone;
+    private int managerId;
     private String dateOfBirth;
-    private String gender;
+    private GenderEnums gender;
     private RoleEnums role;
 
 }

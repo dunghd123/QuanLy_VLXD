@@ -19,6 +19,5 @@ public class EmpResponse {
     private String address;
     private String phoneNum;
     private String description;
-    private String username;
     private boolean isActive;
 }

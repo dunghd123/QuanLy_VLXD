@@ -16,4 +16,5 @@ public interface UserRepo extends JpaRepository<User,Integer> {
     @Query(value = "select * from users u where u.isactive = 1",nativeQuery = true)
     List<User> findAllEmployee();
 
+    boolean existsByUserName(String username);
 }
