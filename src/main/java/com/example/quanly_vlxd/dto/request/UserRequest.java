@@ -1,6 +1,5 @@
 package com.example.quanly_vlxd.dto.request;
 
-import com.example.quanly_vlxd.enums.GenderEnums;
 import com.example.quanly_vlxd.enums.RoleEnums;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
@@ -10,12 +9,11 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class AddUserRequest {
+public class UserRequest {
     @NotBlank(message = "Username is required")
     @Size(min = 4, max = 20, message = "Username must be between 4 and 20 characters")
     private String username;
 
-    @NotBlank(message = "Password is required")
     @Size(min = 6, message = "Password must be at least 6 characters")
     private String password;
 
@@ -38,7 +36,7 @@ public class AddUserRequest {
     private String dateOfBirth;
 
     @NotNull(message = "Gender is required")
-    private GenderEnums gender;
+    private String gender;
 
     @NotNull(message = "Role is required")
     private RoleEnums role;

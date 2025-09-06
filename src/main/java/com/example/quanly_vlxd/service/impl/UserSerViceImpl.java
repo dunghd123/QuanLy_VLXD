@@ -1,6 +1,6 @@
 package com.example.quanly_vlxd.service.impl;
 
-import com.example.quanly_vlxd.dto.request.AddUserRequest;
+import com.example.quanly_vlxd.dto.request.UserRequest;
 import com.example.quanly_vlxd.dto.request.ChangePasswordRequest;
 import com.example.quanly_vlxd.dto.request.LoginRequest;
 import com.example.quanly_vlxd.dto.response.MessageResponse;
@@ -92,44 +92,44 @@ public class UserSerViceImpl implements UserService {
 
     @Override
     @Transactional
-    public ResponseEntity<MessageResponse> addUser(AddUserRequest addUserRequest) {
-        boolean isUsernameExist= userRepo.existsByUserName(addUserRequest.getUsername());
+    public ResponseEntity<MessageResponse> addUser(UserRequest userRequest) {
+        boolean isUsernameExist= userRepo.existsByUserName(userRequest.getUsername());
         if(isUsernameExist){
             return ResponseEntity
                     .status(HttpStatus.CONFLICT)
                     .body(new MessageResponse("Username already exists!"));
         }
-        boolean isPhoneExist= employeeRepo.existsByPhoneNum(addUserRequest.getPhone());
+        boolean isPhoneExist= employeeRepo.existsByPhoneNum(userRequest.getPhone());
         if(isPhoneExist){
             return ResponseEntity
                     .status(HttpStatus.CONFLICT)
                     .body(new MessageResponse("Phone already exists!"));
         }
-        Role role = roleRepo.findByRoleName(addUserRequest.getRole().name())
+        Role role = roleRepo.findByRoleName(userRequest.getRole().name())
                 .orElseThrow(() -> new RuntimeException("Role not found"));
         User user= User
                 .builder()
-                .userName(addUserRequest.getUsername())
-                .password(passwordEncoder.encode(addUserRequest.getPassword()))
+                .userName(userRequest.getUsername())
+                .password(passwordEncoder.encode(userRequest.getPassword()))
                 .isActive(true)
                 .status(false)
                 .role(role)
                 .build();
         userRepo.save(user);
         Employee manager= new Employee();
-        if(addUserRequest.getManagerId()==0){
+        if(userRequest.getManagerId()==0){
             manager=null;
         }else {
-            Optional<Employee> emp= employeeRepo.findById(addUserRequest.getManagerId());
+            Optional<Employee> emp= employeeRepo.findById(userRequest.getManagerId());
             manager= emp.isEmpty() ? null : emp.get();
         }
         Employee employee = Employee
                 .builder()
-                .name(addUserRequest.getFullName())
-                .address(addUserRequest.getAddress())
-                .phoneNum(addUserRequest.getPhone())
-                .gender(addUserRequest.getGender().name())
-                .dob(java.sql.Date.valueOf(addUserRequest.getDateOfBirth()))
+                .name(userRequest.getFullName())
+                .address(userRequest.getAddress())
+                .phoneNum(userRequest.getPhone())
+                .gender(userRequest.getGender())
+                .dob(java.sql.Date.valueOf(userRequest.getDateOfBirth()))
                 .manager(manager)
                 .isActive(true)
                 .user(user)
@@ -187,12 +187,16 @@ public class UserSerViceImpl implements UserService {
             for(User user: employees){
                 UserResponse userResponse= UserResponse
                         .builder()
+                        .id(user.getId())
                         .userName(user.getUserName())
                         .fullName(user.getEmployee().getName())
                         .phone(user.getEmployee().getPhoneNum())
                         .gender(user.getEmployee().getGender())
                         .status(user.isStatus())
                         .role(user.getRole().getRoleName().name())
+                        .address(user.getEmployee().getAddress())
+                        .dateOfBirth(user.getEmployee().getDob().toString())
+                        .managerId(user.getEmployee().getManager()!=null ? user.getEmployee().getManager().getId():0)
                         .build();
                 empResponse.add(userResponse);
             }

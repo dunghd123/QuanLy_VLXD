@@ -1,6 +1,7 @@
 package com.example.quanly_vlxd.controller;
 
 import com.example.quanly_vlxd.dto.request.EmpRequest;
+import com.example.quanly_vlxd.dto.request.UserRequest;
 import com.example.quanly_vlxd.dto.response.EmpResponse;
 import com.example.quanly_vlxd.dto.response.MessageResponse;
 import com.example.quanly_vlxd.service.impl.EmployeeServiceImpl;
@@ -28,9 +29,9 @@ public class EmployeeController {
     public ResponseEntity<MessageResponse> addEmployee(@Valid @RequestBody EmpRequest empRequest){
         return new ResponseEntity<>(employeeServiceImpl.addEmployee(empRequest), HttpStatus.CREATED);
     }
-    @PutMapping("update-employee/{id}")
-    public ResponseEntity<MessageResponse> updateEmployee(@PathVariable(value = "id") int id,@Valid @RequestBody EmpRequest empRequest){
-        return new ResponseEntity<>(employeeServiceImpl.updateEmployee(id, empRequest), HttpStatus.OK);
+    @PutMapping("update-user/{id}")
+    public ResponseEntity<MessageResponse> updateEmployee(@PathVariable(value = "id") int id,@Valid @RequestBody UserRequest userRequest){
+        return employeeServiceImpl.updateUser(id, userRequest);
     }
     @DeleteMapping("delete-user")
     public ResponseEntity<MessageResponse> deleteUser(@RequestParam String username){

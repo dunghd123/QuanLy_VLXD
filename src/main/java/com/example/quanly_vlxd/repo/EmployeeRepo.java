@@ -18,5 +18,8 @@ public interface EmployeeRepo extends JpaRepository<Employee,Integer> {
     List<Employee> getAllManager();
     @Query(value = "select * from employees e where e.user_id = ?1 and e.isactive = 1", nativeQuery = true)
     Employee findByUserID(int userId);
+    @Query(value = "select * from employees e where e.user_id != ?1 and e.isactive = 1", nativeQuery = true)
+    List<Employee> findAnotherEmployee(int userId);
     boolean existsByPhoneNum(String phoneNum);
+    boolean existsByPhoneNumAndUserIdNot(String phoneNum, int id);
 }

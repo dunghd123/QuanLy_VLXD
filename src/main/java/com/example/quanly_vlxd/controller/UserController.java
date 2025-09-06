@@ -1,6 +1,6 @@
 package com.example.quanly_vlxd.controller;
 
-import com.example.quanly_vlxd.dto.request.AddUserRequest;
+import com.example.quanly_vlxd.dto.request.UserRequest;
 import com.example.quanly_vlxd.dto.request.ChangePasswordRequest;
 import com.example.quanly_vlxd.dto.request.LoginRequest;
 import com.example.quanly_vlxd.dto.response.MessageResponse;
@@ -37,8 +37,8 @@ public class UserController {
         return ResponseEntity.ok(userSerVice.refreshToken(refreshToken));
     }
     @PostMapping("add-new-user")
-    public ResponseEntity<MessageResponse> adduser(@Valid @RequestBody AddUserRequest addUserRequest) {
-        return userSerVice.addUser(addUserRequest);
+    public ResponseEntity<MessageResponse> adduser(@Valid @RequestBody UserRequest userRequest) {
+        return userSerVice.addUser(userRequest);
     }
     @PutMapping("logout")
     public ResponseEntity<MessageResponse> logout(@RequestParam String username){

@@ -2,6 +2,7 @@ package com.example.quanly_vlxd.service.impl;
 
 
 import com.example.quanly_vlxd.dto.request.EmpRequest;
+import com.example.quanly_vlxd.dto.request.UserRequest;
 import com.example.quanly_vlxd.dto.response.EmpResponse;
 import com.example.quanly_vlxd.dto.response.MessageResponse;
 import com.example.quanly_vlxd.entity.*;
@@ -14,8 +15,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.sql.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -26,9 +29,9 @@ public class EmployeeServiceImpl implements EmployeeService {
     private final EmployeeRepo employeeRepo;
     private final UserRepo userRepo;
     private final InputInvoiceRepo inputInvoiceRepo;
-    private final InputInvoiceDetailRepo inputInvoiceDetailRepo;
     private final OutputInvoiceRepo outputInvoiceRepo;
-    private final OutputInvoiceDetailRepo OutputInvoiceDetailRepo;
+    private final PasswordEncoder passwordEncoder;
+    private final RoleRepo roleRepo;
 
     @Override
     public MessageResponse addEmployee(EmpRequest empRequest) {
@@ -67,35 +70,50 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     }
     @Override
-    public MessageResponse updateEmployee(int id, EmpRequest empRequest) {
-        Optional<Employee> employee = employeeRepo.findById(id);
-        Optional<User> findbyUsername= userRepo.findByUserName(empRequest.getUsername());
-        if(employee.isEmpty()){
-            return MessageResponse.builder().message("Employee does not exist!!").build();
+    @Transactional
+    public ResponseEntity<MessageResponse> updateUser(int id, UserRequest userRequest) {
+        Optional<User> optionalUser= userRepo.findById(id);
+        if(optionalUser.isEmpty()){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse("User not found"));
         }
-        if(findbyUsername.isEmpty()){
-            return MessageResponse.builder().message("User does not exist!!").build();
-        }
-        List<Employee> employees = employeeRepo.findAll();
-        employees.removeIf(e -> e.getId() == id);
-        for(Employee e: employees){
-            if(findbyUsername.get().getUserName().equals(e.getUser().getUserName())){
-                return MessageResponse.builder().message("User already in use!!!").build();
-            }
-            if(e.getPhoneNum().equals(empRequest.getPhoneNum())){
-                return MessageResponse.builder().message("Phone number already exist!!!").build();
+        User currentUser= optionalUser.get();
+        if(userRequest.getPassword()!= null){
+            boolean isSamePassword= passwordEncoder.matches(optionalUser.get().getPassword(), userRequest.getPassword());
+            if(isSamePassword){
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new MessageResponse("Password is same as old password"));
+            }else {
+                currentUser.setPassword(passwordEncoder.encode(userRequest.getPassword()));
             }
         }
-        Employee employeeCur = employee.get();
-        employeeCur.setName(empRequest.getName());
-        employeeCur.setDob(empRequest.getDob());
-        employeeCur.setGender(empRequest.getGender());
-        employeeCur.setPhoneNum(empRequest.getPhoneNum());
-        employeeCur.setAddress(empRequest.getAddress());
-        employeeCur.setDescription(empRequest.getDescription());
-        employeeCur.setUser(findbyUsername.get());
-        employeeRepo.save(employeeCur);
-        return MessageResponse.builder().message("Update employee successfully!!").build();
+        Role role= roleRepo.findByRoleName(userRequest.getRole().name()).orElseThrow(() -> new RuntimeException("Role not found"));
+        //save User
+        updateUserData(currentUser,userRequest,role,passwordEncoder);
+        userRepo.save(currentUser);
+        //save employee
+        Employee manager= userRequest.getManagerId()!=0 ? employeeRepo.findById(userRequest.getManagerId()).get() : null;
+        Employee currentEmployee= employeeRepo.findByUserID(currentUser.getId());
+
+        boolean isPhoneNumberExist= employeeRepo.existsByPhoneNumAndUserIdNot(userRequest.getPhone(),currentUser.getId());
+        if(isPhoneNumberExist){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new MessageResponse("Phone number already exists!"));
+        }
+        updateEmployeeData(currentEmployee,userRequest,manager);
+        employeeRepo.save(currentEmployee);
+        return ResponseEntity.status(HttpStatus.OK).body(new MessageResponse("User updated successfully"));
+
+    }
+    private static void updateUserData(User currentUser, UserRequest userRequest, Role role, PasswordEncoder passwordEncoder ){
+        currentUser.setRole(role);
+        currentUser.setActive(true);
+        currentUser.setStatus(false);
+    }
+    private static void updateEmployeeData(Employee currentEmployee, UserRequest userRequest, Employee manager){
+        currentEmployee.setName(userRequest.getFullName());
+        currentEmployee.setAddress(userRequest.getAddress());
+        currentEmployee.setDob(Date.valueOf(userRequest.getDateOfBirth()));
+        currentEmployee.setGender(userRequest.getGender());
+        currentEmployee.setPhoneNum(userRequest.getPhone());
+        currentEmployee.setManager(manager);
     }
     @Override
     @Transactional
@@ -118,7 +136,7 @@ public class EmployeeServiceImpl implements EmployeeService {
             employee.setActive(false);
             employeeRepo.save(employee);
         }
-        optionalUser.get().setStatus(false);
+        optionalUser.get().setActive(false);
         userRepo.save(optionalUser.get());
         return ResponseEntity.status(HttpStatus.OK).body(new MessageResponse("User deleted successfully"));
     }
