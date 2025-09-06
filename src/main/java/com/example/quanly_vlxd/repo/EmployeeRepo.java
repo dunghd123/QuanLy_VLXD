@@ -16,6 +16,7 @@ public interface EmployeeRepo extends JpaRepository<Employee,Integer> {
 
     @Query(value = "select * from employees e where e.isactive = 1 and e.manager_id is null",nativeQuery = true)
     List<Employee> getAllManager();
-
+    @Query(value = "select * from employees e where e.user_id = ?1 and e.isactive = 1", nativeQuery = true)
+    Employee findByUserID(int userId);
     boolean existsByPhoneNum(String phoneNum);
 }

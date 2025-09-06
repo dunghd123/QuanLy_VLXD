@@ -17,6 +17,7 @@ import com.example.quanly_vlxd.repo.RefreshTokenRepo;
 import com.example.quanly_vlxd.repo.RoleRepo;
 import com.example.quanly_vlxd.repo.UserRepo;
 import com.example.quanly_vlxd.service.UserService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -90,6 +91,7 @@ public class UserSerViceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public ResponseEntity<MessageResponse> addUser(AddUserRequest addUserRequest) {
         boolean isUsernameExist= userRepo.existsByUserName(addUserRequest.getUsername());
         if(isUsernameExist){
@@ -103,7 +105,8 @@ public class UserSerViceImpl implements UserService {
                     .status(HttpStatus.CONFLICT)
                     .body(new MessageResponse("Phone already exists!"));
         }
-        Role role= roleRepo.findByRoleName(addUserRequest.getRole().name()).get();
+        Role role = roleRepo.findByRoleName(addUserRequest.getRole().name())
+                .orElseThrow(() -> new RuntimeException("Role not found"));
         User user= User
                 .builder()
                 .userName(addUserRequest.getUsername())
@@ -113,13 +116,22 @@ public class UserSerViceImpl implements UserService {
                 .role(role)
                 .build();
         userRepo.save(user);
+        Employee manager= new Employee();
+        if(addUserRequest.getManagerId()==0){
+            manager=null;
+        }else {
+            Optional<Employee> emp= employeeRepo.findById(addUserRequest.getManagerId());
+            manager= emp.isEmpty() ? null : emp.get();
+        }
         Employee employee = Employee
                 .builder()
                 .name(addUserRequest.getFullName())
                 .address(addUserRequest.getAddress())
                 .phoneNum(addUserRequest.getPhone())
+                .gender(addUserRequest.getGender().name())
                 .dob(java.sql.Date.valueOf(addUserRequest.getDateOfBirth()))
-                .manager(employeeRepo.findById(addUserRequest.getManagerId()).get())
+                .manager(manager)
+                .isActive(true)
                 .user(user)
                 .build();
         employeeRepo.save(employee);

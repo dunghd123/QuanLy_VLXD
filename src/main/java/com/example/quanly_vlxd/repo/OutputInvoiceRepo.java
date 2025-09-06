@@ -15,6 +15,8 @@ import java.util.Optional;
 public interface OutputInvoiceRepo extends JpaRepository<OutputInvoice,Integer> {
     @Query(value = "select * from output_invoices o where o.isactive = 1 and o.oi_id = ?1",nativeQuery = true)
     Optional<OutputInvoice> findByOutputInvoiceId(int id);
+    @Query(value = "select * from output_invoices o where o.isactive = 1 and o.emp_id = ?1",nativeQuery = true)
+    List<OutputInvoice> findByEmployeeId(int employeeId);
     ///Chi tiet ban hang
     // Lọc theo sản phẩm (nhiều sản phẩm)
     @Query(value = "SELECT DISTINCT o.* FROM output_invoices o " +

@@ -7,10 +7,13 @@ import com.example.quanly_vlxd.dto.response.MessageResponse;
 import com.example.quanly_vlxd.entity.*;
 import com.example.quanly_vlxd.repo.*;
 import com.example.quanly_vlxd.service.EmployeeService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -24,7 +27,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     private final UserRepo userRepo;
     private final InputInvoiceRepo inputInvoiceRepo;
     private final InputInvoiceDetailRepo inputInvoiceDetailRepo;
-    private final OutputInvoiceRepo OutputInvoiceRepo;
+    private final OutputInvoiceRepo outputInvoiceRepo;
     private final OutputInvoiceDetailRepo OutputInvoiceDetailRepo;
 
     @Override
@@ -95,36 +98,29 @@ public class EmployeeServiceImpl implements EmployeeService {
         return MessageResponse.builder().message("Update employee successfully!!").build();
     }
     @Override
-    public MessageResponse deleteEmployee(int id) {
-        Optional<Employee> employee = employeeRepo.findById(id);
-        if(employee.isEmpty()){
-            return MessageResponse.builder().message("Employee does not exist!!").build();
-        }
-        for(InputInvoice inputInvoice: inputInvoiceRepo.findAll()){
-            if(inputInvoice.getEmployee().getId() == id){
-                for(InputInvoiceDetail inputInvoiceDetail: inputInvoiceDetailRepo.findAll()){
-                    if(inputInvoiceDetail.getInputInvoice().getId() == inputInvoice.getId()){
-                        inputInvoiceDetailRepo.deleteById(inputInvoiceDetail.getId());
-                    }
-                }
+    @Transactional
+    public ResponseEntity<MessageResponse> deleteUser(String username) {
+        Optional<User> optionalUser= userRepo.findByUserName(username);
+        if(optionalUser.isEmpty()){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse("User not found"));
+        }else {
+            Employee employee= employeeRepo.findByUserID(optionalUser.get().getId());
+            List<InputInvoice> inputInvoices = inputInvoiceRepo.findByEmployeeId(employee.getId());
+            List<OutputInvoice> outputInvoices = outputInvoiceRepo.findByEmployeeId(employee.getId());
+            for(InputInvoice inputInvoice: inputInvoices){
                 inputInvoice.setIsActive(false);
                 inputInvoiceRepo.save(inputInvoice);
             }
-        }
-        for(OutputInvoice outputInvoice: OutputInvoiceRepo.findAll()){
-            if(outputInvoice.getEmployee().getId() == id){
-                for(OutputInvoiceDetail outputInvoiceDetail: OutputInvoiceDetailRepo.findAll()){
-                    if(outputInvoiceDetail.getOutputInvoice().getId() == outputInvoice.getId()){
-                        OutputInvoiceDetailRepo.deleteById(outputInvoiceDetail.getId());
-                    }
-                }
+            for(OutputInvoice outputInvoice: outputInvoices){
                 outputInvoice.setIsActive(false);
-                OutputInvoiceRepo.save(outputInvoice);
+                outputInvoiceRepo.save(outputInvoice);
             }
+            employee.setActive(false);
+            employeeRepo.save(employee);
         }
-        employee.get().setActive(false);
-        employeeRepo.save(employee.get());
-        return MessageResponse.builder().message("Delete employee with id: "+id+" successfully!!").build();
+        optionalUser.get().setStatus(false);
+        userRepo.save(optionalUser.get());
+        return ResponseEntity.status(HttpStatus.OK).body(new MessageResponse("User deleted successfully"));
     }
 
     @Override

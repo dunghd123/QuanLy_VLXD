@@ -13,6 +13,8 @@ import java.util.Optional;
 public interface InputInvoiceRepo extends JpaRepository<InputInvoice,Integer> {
     @Query(value = "select * from input_invoices i where i.isactive = 1 and i.inp_id = ?1",nativeQuery = true)
     Optional<InputInvoice> findByInputID(int  id);
+    @Query(value = "select * from input_invoices i where i.isactive = 1 and i.emp_id = ?1",nativeQuery = true)
+    List<InputInvoice> findByEmployeeId(int employeeId);
     //Theo thoi gian
     @Query(value = "select * from input_invoices i where i.inp_creation_time between ?1 and ?2",nativeQuery = true)
     List<InputInvoice> findByCreationTimeBetween(Date startDate, Date endDate);

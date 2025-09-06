@@ -32,9 +32,9 @@ public class EmployeeController {
     public ResponseEntity<MessageResponse> updateEmployee(@PathVariable(value = "id") int id,@Valid @RequestBody EmpRequest empRequest){
         return new ResponseEntity<>(employeeServiceImpl.updateEmployee(id, empRequest), HttpStatus.OK);
     }
-    @DeleteMapping("delete-employee/{id}")
-    public ResponseEntity<MessageResponse> deleteEmployee(@PathVariable(value = "id") int id){
-        return new ResponseEntity<>(employeeServiceImpl.deleteEmployee(id), HttpStatus.OK);
+    @DeleteMapping("delete-user")
+    public ResponseEntity<MessageResponse> deleteUser(@RequestParam String username){
+        return employeeServiceImpl.deleteUser(username);
     }
     @GetMapping("getAllEmployee")
     public Page<EmpResponse> getAll(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size){
