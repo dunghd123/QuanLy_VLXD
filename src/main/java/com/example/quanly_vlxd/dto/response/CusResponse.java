@@ -12,5 +12,4 @@ public class CusResponse {
     private String name;
     private String address;
     private String phoneNum;
-    private boolean isActive;
 }

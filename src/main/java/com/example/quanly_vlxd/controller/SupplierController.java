@@ -19,6 +19,7 @@ import static com.example.quanly_vlxd.help.MapErrors.getMapErrors;
 
 @RestController
 @RequestMapping("/api/v1/supplier/")
+@CrossOrigin("*")
 public class SupplierController {
     @Autowired
     private SupplierServiceImpl supplierService;
@@ -34,7 +35,7 @@ public class SupplierController {
     public ResponseEntity<MessageResponse> deleteSupplier(@RequestParam int id){
         return new ResponseEntity<>(supplierService.deleteSuppler(id), HttpStatus.OK);
     }
-    @GetMapping("getAll")
+    @GetMapping("getAllSupplier")
     public Page<SupplierResponse> getAll(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size){
         return supplierService.getList(page,size);
     }

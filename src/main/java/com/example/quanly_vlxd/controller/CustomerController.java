@@ -18,6 +18,7 @@ import static com.example.quanly_vlxd.help.MapErrors.getMapErrors;
 
 @RestController
 @RequestMapping("/api/v1/customer/")
+@CrossOrigin("*")
 public class CustomerController {
     @Autowired
     private CustomerServiceImpl customerServiceImpl;

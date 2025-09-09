@@ -44,10 +44,10 @@ public class CustomerServiceImpl implements CustomerService {
             }
         }
         Customer newCus = Customer.builder()
-                .Name(customerRequest.getName())
-                .Address(customerRequest.getAddress())
-                .PhoneNum(customerRequest.getPhoneNum())
-                .IsActive(true)
+                .name(customerRequest.getName())
+                .address(customerRequest.getAddress())
+                .phoneNum(customerRequest.getPhoneNum())
+                .isActive(true)
                 .build();
         customerRepo.save(newCus);
         return MessageResponse.builder().message("Create new customer successfully!!!").build();
@@ -91,7 +91,7 @@ public class CustomerServiceImpl implements CustomerService {
                 outputInvoiceRepo.save(outputInvoice);
             }
         }
-        customer.get().setIsActive(false);
+        customer.get().setActive(false);
         customerRepo.save(customer.get());
         return MessageResponse.builder().message("Delete customer successfully!!!").build();
     }
@@ -123,7 +123,6 @@ public class CustomerServiceImpl implements CustomerService {
                 .name(customer.getName())
                 .address(customer.getAddress())
                 .phoneNum(customer.getPhoneNum())
-                .isActive(customer.isIsActive())
                 .build();
     }
 }

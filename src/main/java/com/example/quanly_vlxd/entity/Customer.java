@@ -17,19 +17,19 @@ public class Customer {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "cus_id")
-    private int Id;
+    private int id;
 
     @Column(name = "cus_name",nullable = false)
-    private String Name;
+    private String name;
 
     @Column(name = "cus_address",nullable = false)
-    private String Address;
+    private String address;
 
     @Column(name = "cus_phonenum",nullable = false,unique = true)
-    private String PhoneNum;
+    private String phoneNum;
 
     @Column(name = "isactive")
-    private boolean IsActive;
+    private boolean isActive;
 
     @OneToMany(mappedBy = "customer")
     @JsonIgnoreProperties(value = "customer")
