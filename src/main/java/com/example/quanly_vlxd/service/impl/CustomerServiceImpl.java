@@ -5,7 +5,6 @@ import com.example.quanly_vlxd.dto.response.CusResponse;
 import com.example.quanly_vlxd.dto.response.MessageResponse;
 import com.example.quanly_vlxd.entity.Customer;
 import com.example.quanly_vlxd.entity.OutputInvoice;
-import com.example.quanly_vlxd.entity.OutputInvoiceDetail;
 import com.example.quanly_vlxd.repo.CustomerRepo;
 import com.example.quanly_vlxd.repo.OutputInvoiceDetailRepo;
 import com.example.quanly_vlxd.repo.OutputInvoiceRepo;
@@ -14,6 +13,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -26,74 +27,63 @@ public class CustomerServiceImpl implements CustomerService {
 
     private final CustomerRepo customerRepo;
 
-    private final OutputInvoiceDetailRepo outputInvoiceDetailRepo;
 
     private final OutputInvoiceRepo outputInvoiceRepo;
 
     @Autowired
     public CustomerServiceImpl(CustomerRepo customerRepo, OutputInvoiceDetailRepo outputInvoiceDetailRepo, OutputInvoiceRepo outputInvoiceRepo) {
         this.customerRepo = customerRepo;
-        this.outputInvoiceDetailRepo = outputInvoiceDetailRepo;
         this.outputInvoiceRepo = outputInvoiceRepo;
     }
     @Override
-    public MessageResponse addCustomer(CustomerRequest customerRequest) {
-        for (Customer customer : customerRepo.findAll()) {
-            if (customer.getPhoneNum().equals(customerRequest.getPhoneNum())) {
-                return MessageResponse.builder().message("Customer phone number already exist!!!").build();
-            }
+    public ResponseEntity<MessageResponse> addCustomer(CustomerRequest customerRequest) {
+        boolean isPhoneExist = customerRepo.existsByPhoneNum(customerRequest.getPhone());
+        if(isPhoneExist){
+            return  ResponseEntity.badRequest().body(MessageResponse.builder().message("Customer phone number already exist!!!").build());
         }
         Customer newCus = Customer.builder()
                 .name(customerRequest.getName())
                 .address(customerRequest.getAddress())
-                .phoneNum(customerRequest.getPhoneNum())
+                .phoneNum(customerRequest.getPhone())
                 .isActive(true)
                 .build();
         customerRepo.save(newCus);
-        return MessageResponse.builder().message("Create new customer successfully!!!").build();
+        return ResponseEntity.ok(MessageResponse.builder().message("Create new customer successfully!!!").build());
     }
 
     @Override
-    public MessageResponse updateCustomer(int id, CustomerRequest customerRequest) {
+    public ResponseEntity<MessageResponse> updateCustomer(int id, CustomerRequest customerRequest) {
         Optional<Customer> customer = customerRepo.findById(id);
-        if (customer.isEmpty()) {
-            return MessageResponse.builder().message("ID: " + id + " is not exist").build();
+        if(customer.isEmpty()){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse("Customer not found"));
         }
-        List<Customer> customers = customerRepo.findAll();
-        customers.removeIf(c -> c.getId() == id);
-        for(Customer customer1: customers){
-            if(customer1.getPhoneNum().equals(customerRequest.getPhoneNum())){
-                return MessageResponse.builder().message("Customer phone number already exist!!!").build();
-            }
+        boolean isPhoneExist = customerRepo.existsByPhoneNumAndIdNot(customerRequest.getPhone(), id);
+        if(isPhoneExist){
+            return ResponseEntity.badRequest().body(MessageResponse.builder().message("Customer phone number already exist!!!").build());
         }
-        Customer cusCur = customer.get();
-        cusCur.setName(customerRequest.getName());
-        cusCur.setAddress(customerRequest.getAddress());
-        cusCur.setPhoneNum(customerRequest.getPhoneNum());
-        customerRepo.save(cusCur);
-        return MessageResponse.builder().message("Update information successfully!!!").build();
+        Customer customerUpdate= customer.get();
+        customerUpdate.setName(customerRequest.getName());
+        customerUpdate.setAddress(customerRequest.getAddress());
+        customerUpdate.setPhoneNum(customerRequest.getPhone());
+        customerRepo.save(customerUpdate);
+        return ResponseEntity.ok(MessageResponse.builder().message("Update customer successfully!!!").build());
     }
 
     @Override
-    public MessageResponse deleteCustomer(int id) {
+    public ResponseEntity<MessageResponse> deleteCustomer(int id) {
         Optional<Customer> customer = customerRepo.findById(id);
-        if (customer.isEmpty()) {
-            return MessageResponse.builder().message("ID: " + id + " is not exist").build();
+        if(customer.isEmpty()){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse("Customer not found"));
         }
         for (OutputInvoice outputInvoice : outputInvoiceRepo.findAll()) {
             if (outputInvoice.getCustomer().getId() == id) {
-                for(OutputInvoiceDetail outputInvoiceDetail: outputInvoiceDetailRepo.findAll()){
-                    if(outputInvoiceDetail.getOutputInvoice().getId()==outputInvoice.getId()){
-                        outputInvoiceDetailRepo.deleteById(outputInvoiceDetail.getId());
-                    }
-                }
                 outputInvoice.setIsActive(false);
                 outputInvoiceRepo.save(outputInvoice);
             }
         }
         customer.get().setActive(false);
         customerRepo.save(customer.get());
-        return MessageResponse.builder().message("Delete customer successfully!!!").build();
+        return ResponseEntity.ok(MessageResponse.builder().message("Delete customer successfully!!!").build());
     }
     private static String convertName(String name){
         List<String> set = new ArrayList<>();
@@ -120,9 +110,9 @@ public class CustomerServiceImpl implements CustomerService {
     private CusResponse convertToDTO(Customer customer) {
         return CusResponse.builder()
                 .id(customer.getId())
-                .name(customer.getName())
+                .name(convertName(customer.getName()))
                 .address(customer.getAddress())
-                .phoneNum(customer.getPhoneNum())
+                .phone(customer.getPhoneNum())
                 .build();
     }
 }

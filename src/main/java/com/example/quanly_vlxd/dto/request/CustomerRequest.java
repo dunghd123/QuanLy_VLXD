@@ -21,6 +21,6 @@ public class CustomerRequest {
 
     @NotBlank(message = "Phone number is required")
     @Pattern(regexp = "^\\+?[0-9]{10,15}$", message = "Phone number must be valid and contain only digits between 10 and 15 digits")
-    private String phoneNum;
+    private String phone;
 
 }

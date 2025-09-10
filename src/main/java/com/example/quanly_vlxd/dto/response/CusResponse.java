@@ -11,5 +11,5 @@ public class CusResponse {
     private int id;
     private String name;
     private String address;
-    private String phoneNum;
+    private String phone;
 }

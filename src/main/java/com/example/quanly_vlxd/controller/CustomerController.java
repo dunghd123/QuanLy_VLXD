@@ -25,11 +25,11 @@ public class CustomerController {
 
     @PostMapping("add-new-customer")
     public ResponseEntity<MessageResponse> addNewCustomer(@Valid @RequestBody CustomerRequest customerRequest){
-        return new ResponseEntity<>(customerServiceImpl.addCustomer(customerRequest), HttpStatus.CREATED);
+        return customerServiceImpl.addCustomer(customerRequest);
     }
     @PutMapping("update-customer/{id}")
     public ResponseEntity<MessageResponse> updateCustomer(@PathVariable(value = "id") int id,@Valid @RequestBody CustomerRequest customerRequest){
-        return new ResponseEntity<>(customerServiceImpl.updateCustomer(id, customerRequest), HttpStatus.OK);
+        return customerServiceImpl.updateCustomer(id,customerRequest);
     }
 
     @PutMapping("convert-customer")
@@ -38,7 +38,7 @@ public class CustomerController {
     }
     @DeleteMapping("delete-customer/{id}")
     public ResponseEntity<MessageResponse> deleteCustomer(@PathVariable(value = "id") int id){
-        return new ResponseEntity<>(customerServiceImpl.deleteCustomer(id), HttpStatus.OK);
+        return customerServiceImpl.deleteCustomer(id);
     }
     @GetMapping("getAllCustomer")
     public Page<CusResponse> getAll(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size){

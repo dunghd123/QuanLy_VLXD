@@ -11,4 +11,6 @@ import org.springframework.stereotype.Repository;
 public interface CustomerRepo extends JpaRepository<Customer,Integer> {
     @Query(value = "select * from customers c where c.isactive = 1",nativeQuery = true)
     Page<Customer> getAll(Pageable pageable);
+    boolean existsByPhoneNumAndIdNot(String phoneNum, int id);
+    boolean existsByPhoneNum(String phoneNum);
 }
