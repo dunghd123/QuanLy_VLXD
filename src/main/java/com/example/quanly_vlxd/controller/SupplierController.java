@@ -25,22 +25,20 @@ public class SupplierController {
     private SupplierServiceImpl supplierService;
     @PostMapping("add-supplier")
     public ResponseEntity<MessageResponse> addNewSupplier(@Valid @RequestBody SupplierRequest supplierRequest){
-        return new ResponseEntity<>(supplierService.addSupplier(supplierRequest), HttpStatus.CREATED);
+        return supplierService.addSupplier(supplierRequest);
     }
-    @PutMapping("update-supplier")
-    public ResponseEntity<MessageResponse> updateSupplier(@RequestParam int id,@Valid @RequestBody SupplierRequest supplierRequest){
-        return new ResponseEntity<>(supplierService.updateSupplier(id, supplierRequest), HttpStatus.OK);
+    @PutMapping("update-supplier/{id}")
+    public ResponseEntity<MessageResponse> updateSupplier(@PathVariable("id") int id,@Valid @RequestBody SupplierRequest supplierRequest){
+        return supplierService.updateSupplier(id, supplierRequest);
     }
-    @DeleteMapping("delete-supplier")
-    public ResponseEntity<MessageResponse> deleteSupplier(@RequestParam int id){
-        return new ResponseEntity<>(supplierService.deleteSuppler(id), HttpStatus.OK);
+    @DeleteMapping("delete-supplier/{id}")
+    public ResponseEntity<MessageResponse> deleteSupplier(@PathVariable("id") int id){
+        return supplierService.deleteSuppler(id);
     }
     @GetMapping("getAllSupplier")
     public Page<SupplierResponse> getAll(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size){
         return supplierService.getList(page,size);
     }
-
-
 
     @ResponseStatus(HttpStatus.BAD_REQUEST) // Trả về mã 400 BAD_REQUEST
     @ExceptionHandler(MethodArgumentNotValidException.class) // Xử lý ngoại lệ MethodArgumentNotValidException

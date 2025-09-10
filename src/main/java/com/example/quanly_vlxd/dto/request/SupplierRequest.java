@@ -20,5 +20,5 @@ public class SupplierRequest {
 
     @NotBlank(message = "Phone number cannot be empty")
     @Pattern(regexp = "^[0-9]{10,15}$", message = "Phone number should be between 10 and 15 digits")
-    private String phoneNum;
+    private String phone;
 }

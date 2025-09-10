@@ -17,15 +17,15 @@ public class Supplier {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "sup_id")
-    private int Id;
+    private int id;
     @Column(name = "sup_name")
-    private String Name;
+    private String name;
     @Column(name = "sup_address")
-    private String Address;
+    private String address;
     @Column(name = "sup_phonenum",unique = true)
-    private String PhoneNum;
+    private String phoneNum;
     @Column(name = "isactive")
-    private boolean IsActive;
+    private boolean isActive;
 
     @OneToMany(mappedBy = "supplier")
     @JsonIgnoreProperties(value = "supplier")
