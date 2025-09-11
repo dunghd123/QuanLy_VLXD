@@ -18,22 +18,23 @@ import static com.example.quanly_vlxd.help.MapErrors.getMapErrors;
 
 @RestController
 @RequestMapping("/api/v1/category/")
+@CrossOrigin("*")
 public class CategoryController {
     @Autowired
     private CategoryServiceImpl categoryService;
     @PostMapping("add-category")
     public ResponseEntity<MessageResponse> addNewCategory(@Valid @RequestBody CategoryRequest categoryRequest){
-        return new ResponseEntity<>(categoryService.addCategory(categoryRequest), HttpStatus.CREATED);
+        return categoryService.addCategory(categoryRequest);
     }
-    @PutMapping("update-category")
-    public ResponseEntity<MessageResponse> updateCategory(@RequestParam int id,@Valid @RequestBody CategoryRequest categoryRequest){
-        return new ResponseEntity<>(categoryService.updateCategory(id, categoryRequest), HttpStatus.OK);
+    @PutMapping("update-category/{id}")
+    public ResponseEntity<MessageResponse> updateCategory(@PathVariable(value = "id") int id, @Valid @RequestBody CategoryRequest categoryRequest){
+        return categoryService.updateCategory(id, categoryRequest);
     }
-    @DeleteMapping("delete-category")
-    public ResponseEntity<MessageResponse> deleteCategory(@RequestParam int id){
-        return new ResponseEntity<>(categoryService.deleteCategory(id), HttpStatus.OK);
+    @DeleteMapping("delete-category/{id}")
+    public ResponseEntity<MessageResponse> deleteCategory(@PathVariable(value = "id") int id){
+        return categoryService.deleteCategory(id);
     }
-    @GetMapping("getAll")
+    @GetMapping("getAllCategory")
     public Page<CategoryResponse> getAll(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size){
         return categoryService.getAll(page,size);
     }

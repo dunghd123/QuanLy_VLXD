@@ -19,6 +19,7 @@ import static com.example.quanly_vlxd.help.MapErrors.getMapErrors;
 
 @RestController
 @RequestMapping("/api/v1/product/")
+@CrossOrigin("*")
 public class ProductController {
 
     @Autowired
@@ -43,7 +44,7 @@ public class ProductController {
     }
 
     // Get paginated list of products
-    @GetMapping("getAll")
+    @GetMapping("getAllProduct")
     public Page<ProductResponse> getAll(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
         return productService.getAllProducts(page, size);
     }

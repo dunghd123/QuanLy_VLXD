@@ -11,6 +11,7 @@ import lombok.Setter;
 @AllArgsConstructor
 public class CategoryRequest {
     @NotBlank(message = "Name is required")
-    private String Name;
-    private String Description;
+    private String name;
+    @NotBlank(message = "Description is required")
+    private String description;
 }

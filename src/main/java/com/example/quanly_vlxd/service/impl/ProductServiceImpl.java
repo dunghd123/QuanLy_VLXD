@@ -89,10 +89,9 @@ public class ProductServiceImpl implements ProductService {
         return ProductResponse.builder()
                 .id(product.getId())
                 .name(product.getName())
-                .cate_id(product.getCategory().getId())
+                .cateName(product.getCategory().getName())
                 .unitMeasure(product.getUnitMeasure())
                 .description(product.getDescription())
-                .isActive(product.isIsActive())
                 .build();
     }
 }

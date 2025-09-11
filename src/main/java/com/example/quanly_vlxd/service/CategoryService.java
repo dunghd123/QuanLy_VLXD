@@ -4,11 +4,12 @@ import com.example.quanly_vlxd.dto.request.CategoryRequest;
 import com.example.quanly_vlxd.dto.response.CategoryResponse;
 import com.example.quanly_vlxd.dto.response.MessageResponse;
 import org.springframework.data.domain.Page;
+import org.springframework.http.ResponseEntity;
 
 public interface CategoryService {
-    MessageResponse addCategory(CategoryRequest categoryRequest);
-    MessageResponse updateCategory(int id, CategoryRequest categoryRequest);
+    ResponseEntity<MessageResponse> addCategory(CategoryRequest categoryRequest);
+    ResponseEntity<MessageResponse> updateCategory(int id, CategoryRequest categoryRequest);
 
-    MessageResponse deleteCategory(int id);
+    ResponseEntity<MessageResponse> deleteCategory(int id);
     Page<CategoryResponse> getAll(int page, int size);
 }

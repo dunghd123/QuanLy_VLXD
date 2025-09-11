@@ -11,4 +11,6 @@ import org.springframework.stereotype.Repository;
 public interface CategoryRepo extends JpaRepository<Category,Integer> {
     @Query(value = "select * from categories c where c.isactive = 1",nativeQuery = true)
     Page<Category> getAll(Pageable pageable);
+    boolean existsByName(String name);
+    boolean existsByNameAndIdNot(String name, Integer id);
 }

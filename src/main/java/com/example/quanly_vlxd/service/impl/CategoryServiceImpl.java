@@ -16,10 +16,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -37,46 +36,42 @@ public class CategoryServiceImpl implements CategoryService {
         this.inputInvoiceDetailRepo = inputInvoiceDetailRepo;
     }
     @Override
-    public MessageResponse addCategory(CategoryRequest categoryRequest) {
-        for(Category category: categoryRepo.findAll()){
-            if(category.getName().equals(categoryRequest.getName())){
-                return MessageResponse.builder().message("Category name already exist!!!").build();
-            }
+    public ResponseEntity<MessageResponse> addCategory(CategoryRequest categoryRequest) {
+        boolean isCateNameExist= categoryRepo.existsByName(categoryRequest.getName());
+        if(isCateNameExist){
+            return ResponseEntity.badRequest().body(MessageResponse.builder().message("Category name already exist!!!").build());
         }
         Category newCate= Category.builder()
-                .Name(categoryRequest.getName())
-                .Description(categoryRequest.getDescription())
-                .IsActive(true)
+                .name(categoryRequest.getName())
+                .description(categoryRequest.getDescription())
+                .isActive(true)
                 .build();
         categoryRepo.save(newCate);
-        return MessageResponse.builder().message("create new category successfully!!!").build();
+        return ResponseEntity.ok(MessageResponse.builder().message("Create new category successfully!!!").build());
     }
 
     @Override
-    public MessageResponse updateCategory(int id, CategoryRequest categoryRequest) {
+    public ResponseEntity<MessageResponse> updateCategory(int id, CategoryRequest categoryRequest) {
         Optional<Category> category= categoryRepo.findById(id);
         if(category.isEmpty()){
-            return MessageResponse.builder().message("ID: "+id+ " is not exist").build();
+          return ResponseEntity.badRequest().body(MessageResponse.builder().message("ID: "+id+ " is not exist").build());
         }
-        List<Category> list= new ArrayList<>(categoryRepo.findAll());
-        list.removeIf(c->c.getId()==id);
-        for(Category c: list){
-            if(c.getName().equals(categoryRequest.getName())){
-                return MessageResponse.builder().message("Category name already exist!!!").build();
-            }
+        boolean isCateNameDuplicate= categoryRepo.existsByNameAndIdNot(categoryRequest.getName(), id);
+        if(isCateNameDuplicate){
+            return ResponseEntity.badRequest().body(MessageResponse.builder().message("Category name already exist!!!").build());
         }
         Category curCategory= category.get();
         curCategory.setName(categoryRequest.getName());
         curCategory.setDescription(categoryRequest.getDescription());
         categoryRepo.save(curCategory);
-        return MessageResponse.builder().message("Update information successfully!!!").build();
+        return ResponseEntity.ok(MessageResponse.builder().message("Update information successfully!!!").build());
     }
 
     @Override
-    public MessageResponse deleteCategory(int id) {
+    public ResponseEntity<MessageResponse> deleteCategory(int id) {
         Optional<Category> category= categoryRepo.findById(id);
         if(category.isEmpty()){
-            return MessageResponse.builder().message("ID: "+id+ " is not exist").build();
+           return ResponseEntity.badRequest().body(MessageResponse.builder().message("ID: "+id+ " is not exist").build());
         }
         for(Product pr: productRepo.findAll()){
             if(pr.getCategory().getId()==id){
@@ -94,9 +89,9 @@ public class CategoryServiceImpl implements CategoryService {
                 productRepo.save(pr);
             }
         }
-        category.get().setIsActive(false);
+        category.get().setActive(false);
         categoryRepo.save(category.get());
-        return MessageResponse.builder().message("Delete Category with Id:"+id+" successfully!!!").build();
+        return ResponseEntity.ok(MessageResponse.builder().message("Delete Category with Id:"+id+" successfully!!!").build());
     }
 
     @Override
@@ -109,7 +104,6 @@ public class CategoryServiceImpl implements CategoryService {
                 .id(category.getId())
                 .name(category.getName())
                 .description(category.getDescription())
-                .isActive(category.isIsActive())
                 .build();
     }
 }

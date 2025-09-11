@@ -12,6 +12,5 @@ public class ProductResponse {
     private String name;
     private String unitMeasure;
     private String description;
-    private boolean isActive;
-    private int cate_id;
+    private String cateName;
 }
