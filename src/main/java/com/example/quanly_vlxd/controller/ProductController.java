@@ -25,25 +25,21 @@ public class ProductController {
     @Autowired
     private ProductServiceImpl productService;
 
-    // Create new product
     @PostMapping("add-product")
     public ResponseEntity<MessageResponse> addNewProduct(@Valid @RequestBody ProductRequest productRequest) {
-        return new ResponseEntity<>(productService.addProduct(productRequest), HttpStatus.CREATED);
+        return productService.addProduct(productRequest);
     }
 
-    // Update existing product
-    @PutMapping("update-product")
-    public ResponseEntity<MessageResponse> updateProduct(@RequestParam int id, @Valid @RequestBody ProductRequest productRequest) {
-        return new ResponseEntity<>(productService.updateProduct(id, productRequest), HttpStatus.OK);
+    @PutMapping("update-product/{id}")
+    public ResponseEntity<MessageResponse> updateProduct(@PathVariable(value = "id") int id, @Valid @RequestBody ProductRequest productRequest) {
+        return productService.updateProduct(id, productRequest);
     }
 
-    // Delete product
-    @DeleteMapping("delete-product")
-    public ResponseEntity<MessageResponse> deleteProduct(@RequestParam int id) {
-        return new ResponseEntity<>(productService.deleteProduct(id), HttpStatus.OK);
+    @DeleteMapping("delete-product/{id}")
+    public ResponseEntity<MessageResponse> deleteProduct(@PathVariable(value = "id") int id) {
+        return productService.deleteProduct(id);
     }
 
-    // Get paginated list of products
     @GetMapping("getAllProduct")
     public Page<ProductResponse> getAll(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
         return productService.getAllProducts(page, size);

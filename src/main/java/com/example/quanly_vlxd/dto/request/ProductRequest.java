@@ -12,15 +12,14 @@ import lombok.*;
 public class ProductRequest {
 
     @NotBlank(message = "Product name cannot be empty")
-    @Size(max = 100, message = "Product name should not exceed 100 characters")
     private String name;
 
     @NotBlank(message = "Unit of measure cannot be empty")
-    @Size(max = 50, message = "Unit of measure should not exceed 50 characters")
+    @Size(max = 10, message = "Unit of measure should not exceed 10 characters")
     private String unitMeasure;
 
     @NotNull(message = "Category ID cannot be null")
-    private Integer categoryId;
+    private Integer cateId;
 
     @Size(max = 500, message = "Description must not exceed 500 characters")
     private String description;

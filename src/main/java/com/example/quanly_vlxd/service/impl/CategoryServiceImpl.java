@@ -4,9 +4,7 @@ import com.example.quanly_vlxd.dto.request.CategoryRequest;
 import com.example.quanly_vlxd.dto.response.CategoryResponse;
 import com.example.quanly_vlxd.dto.response.MessageResponse;
 import com.example.quanly_vlxd.entity.Category;
-import com.example.quanly_vlxd.entity.InputInvoiceDetail;
 import com.example.quanly_vlxd.entity.Product;
-import com.example.quanly_vlxd.entity.WareHouse_Product;
 import com.example.quanly_vlxd.repo.CategoryRepo;
 import com.example.quanly_vlxd.repo.InputInvoiceDetailRepo;
 import com.example.quanly_vlxd.repo.ProductRepo;
@@ -19,7 +17,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class CategoryServiceImpl implements CategoryService {
@@ -75,17 +75,7 @@ public class CategoryServiceImpl implements CategoryService {
         }
         for(Product pr: productRepo.findAll()){
             if(pr.getCategory().getId()==id){
-                for(InputInvoiceDetail ip: inputInvoiceDetailRepo.findAll()){
-                    if(ip.getProduct().getId()==pr.getId()){
-                        inputInvoiceDetailRepo.deleteById(ip.getId());
-                    }
-                }
-                for(WareHouse_Product inv: warehouseProductRepo.findAll()){
-                    if(inv.getProduct().getId()== pr.getId()){
-                        warehouseProductRepo.deleteById(inv.getId());
-                    }
-                }
-                pr.setIsActive(false);
+                pr.setActive(false);
                 productRepo.save(pr);
             }
         }
@@ -99,6 +89,12 @@ public class CategoryServiceImpl implements CategoryService {
         Pageable pageable = PageRequest.of(page, size);
         return categoryRepo.getAll(pageable).map(this::convertToDTO);
     }
+
+    @Override
+    public List<CategoryResponse> getListCategory() {
+        return categoryRepo.getListCategory().stream().map(this::convertToDTO).collect(Collectors.toList());
+    }
+
     private CategoryResponse convertToDTO(Category category){
         return CategoryResponse.builder()
                 .id(category.getId())

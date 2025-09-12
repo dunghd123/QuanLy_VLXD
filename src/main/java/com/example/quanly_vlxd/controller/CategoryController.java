@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 import static com.example.quanly_vlxd.help.MapErrors.getMapErrors;
@@ -37,6 +38,10 @@ public class CategoryController {
     @GetMapping("getAllCategory")
     public Page<CategoryResponse> getAll(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size){
         return categoryService.getAll(page,size);
+    }
+    @GetMapping("getListCategory")
+    public List<CategoryResponse> getListCategory(){
+        return categoryService.getListCategory();
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST) // Trả về mã 400 BAD_REQUEST

@@ -17,19 +17,19 @@ public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "pro_id")
-    private int Id;
+    private int id;
 
     @Column(name = "pro_name",nullable = false,unique = true)
-    private String Name;
+    private String name;
 
     @Column(name = "pro_unit_measure",nullable = false)
-    private String UnitMeasure;
+    private String unitMeasure;
 
     @Column(name = "pro_description")
-    private String Description;  ;
+    private String description;  ;
 
     @Column(name = "isactive")
-    private boolean IsActive;
+    private boolean isActive;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "cate_id", foreignKey = @ForeignKey(name = "FK_PRODUCT_CATEGORY"))

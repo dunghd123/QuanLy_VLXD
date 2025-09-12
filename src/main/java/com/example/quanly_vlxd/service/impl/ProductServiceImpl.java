@@ -13,6 +13,7 @@ import org.springframework.data.domain.Page;
 
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 
@@ -26,58 +27,66 @@ public class ProductServiceImpl implements ProductService {
     private final CategoryRepo categoryRepo;
 
     @Override
-    public MessageResponse addProduct(ProductRequest productRequest) {
-        Optional<Category> categoryOpt = categoryRepo.findById(productRequest.getCategoryId());
+    public ResponseEntity<MessageResponse> addProduct(ProductRequest productRequest) {
+        Optional<Category> categoryOpt = categoryRepo.findById(productRequest.getCateId());
         if (categoryOpt.isEmpty()) {
-            return MessageResponse.builder().message("Category ID: " + productRequest.getCategoryId() + " does not exist").build();
+            return ResponseEntity.badRequest().body(MessageResponse.builder().message("Category ID: " + productRequest.getCateId() + " does not exist").build());
+        }
+        boolean isNameExist= productRepo.existsByName(productRequest.getName());
+        if(isNameExist){
+            return ResponseEntity.badRequest().body(MessageResponse.builder().message("Product name already exist!!!").build());
         }
 
         Product newProduct = Product.builder()
-                .Name(productRequest.getName())
-                .UnitMeasure(productRequest.getUnitMeasure())
-                .Description(productRequest.getDescription())
-                .IsActive(true)
-                .category(categoryOpt.get()) // Thiết lập danh mục cho sản phẩm
+                .name(productRequest.getName())
+                .unitMeasure(productRequest.getUnitMeasure())
+                .description(productRequest.getDescription())
+                .isActive(true)
+                .category(categoryOpt.get())
                 .build();
 
         productRepo.save(newProduct);
-        return MessageResponse.builder().message("Create new product successfully!!!").build();
+        return ResponseEntity.ok(MessageResponse.builder().message("Create new product successfully!!!").build());
     }
 
     @Override
-    public MessageResponse updateProduct(int id, ProductRequest productRequest) {
-        Optional<Product> productOpt = productRepo.findById(id);
+    public ResponseEntity<MessageResponse> updateProduct(int proId, ProductRequest productRequest) {
+        Optional<Product> productOpt = productRepo.findById(proId);
         if (productOpt.isEmpty()) {
-            return MessageResponse.builder().message("Product ID: " + id + " does not exist").build();
+            return ResponseEntity.badRequest().body(MessageResponse.builder().message("Product ID: " + proId + " does not exist").build());
         }
 
         Product product = productOpt.get();
-        Optional<Category> categoryOpt = categoryRepo.findById(productRequest.getCategoryId());
+        Optional<Category> categoryOpt = categoryRepo.findById(productRequest.getCateId());
         if (categoryOpt.isEmpty()) {
-            return MessageResponse.builder().message("Category ID: " + productRequest.getCategoryId() + " does not exist").build();
+            return ResponseEntity.badRequest().body(MessageResponse.builder().message("Category ID: " + productRequest.getCateId() + " does not exist").build());
+        }
+        boolean isNameDuplicate= productRepo.existsByNameAndIdNot(productRequest.getName(),proId);
+        if(isNameDuplicate){
+            return ResponseEntity.badRequest().body(MessageResponse.builder().message("Product name already exist!!!").build());
         }
 
         product.setName(productRequest.getName());
         product.setUnitMeasure(productRequest.getUnitMeasure());
         product.setDescription(productRequest.getDescription());
-        product.setCategory(categoryOpt.get()); // Cập nhật danh mục cho sản phẩm
+        product.setCategory(categoryOpt.get());
 
         productRepo.save(product);
-        return MessageResponse.builder().message("Update product information successfully!!!").build();
+        return ResponseEntity.ok(MessageResponse.builder().message("Update product information successfully!!!").build());
     }
 
     @Override
-    public MessageResponse deleteProduct(int id) {
+    public ResponseEntity<MessageResponse> deleteProduct(int id) {
         Optional<Product> productOpt = productRepo.findById(id);
         if (productOpt.isEmpty()) {
-            return MessageResponse.builder().message("Product ID: " + id + " does not exist").build();
+           return ResponseEntity.badRequest().body(MessageResponse.builder().message("Product ID: " + id + " does not exist").build());
         }
 
         Product product = productOpt.get();
-        product.setIsActive(false); // Thực hiện soft delete thay vì xóa hoàn toàn
+        product.setActive(false);
         productRepo.save(product);
 
-        return MessageResponse.builder().message("Delete product ID: " + id + " successfully!!!").build();
+        return ResponseEntity.ok(MessageResponse.builder().message("Delete product ID: " + id + " successfully!!!").build());
     }
 
     @Override
