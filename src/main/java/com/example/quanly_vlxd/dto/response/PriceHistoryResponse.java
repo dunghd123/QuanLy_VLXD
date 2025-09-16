@@ -12,12 +12,13 @@ import java.util.Date;
 @Builder
 public class PriceHistoryResponse {
     private int id;
-    private String productName;
     private String invoiceType;
+    private String productName;
     private double price;
-    @JsonFormat(pattern = "dd-MM-yyyy",shape = JsonFormat.Shape.STRING,timezone = "GMT+7")
+    private String unitMeasure;
+    @JsonFormat(pattern = "dd-MM-yyyy HH:mm:ss",shape = JsonFormat.Shape.STRING,timezone = "GMT+7")
     private Date startDate;
-    @JsonFormat(pattern = "dd-MM-yyyy",shape = JsonFormat.Shape.STRING,timezone = "GMT+7")
+    @JsonFormat(pattern = "dd-MM-yyyy HH:mm:ss",shape = JsonFormat.Shape.STRING,timezone = "GMT+7")
     private Date endDate;
     private boolean isActive;
 }
