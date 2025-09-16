@@ -17,6 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -94,6 +95,12 @@ public class ProductServiceImpl implements ProductService {
         Pageable pageable = PageRequest.of(page, size);
         return productRepo.getAll(pageable).map(this::convertToDTO);
     }
+
+    @Override
+    public List<ProductResponse> getListActiveProduct() {
+        return productRepo.getListActiveProduct().stream().map(this::convertToDTO).toList();
+    }
+
     private ProductResponse convertToDTO(Product product){
         return ProductResponse.builder()
                 .id(product.getId())

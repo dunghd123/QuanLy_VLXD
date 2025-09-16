@@ -6,9 +6,10 @@ import com.example.quanly_vlxd.dto.request.PriceHistoryRequest;
 import com.example.quanly_vlxd.dto.response.MessageResponse;
 import com.example.quanly_vlxd.dto.response.PriceHistoryResponse;
 import org.springframework.data.domain.Page;
+import org.springframework.http.ResponseEntity;
 
 public interface PriceHistoryService {
-    MessageResponse addPrice(PriceHistoryRequest priceHistoryRequest);
+    ResponseEntity<MessageResponse> addPrice(PriceHistoryRequest priceHistoryRequest);
 
     Page<PriceHistoryResponse> filter(PriceFilterRequest req);
 }

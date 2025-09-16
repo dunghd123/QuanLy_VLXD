@@ -5,7 +5,7 @@ import com.example.quanly_vlxd.dto.request.PriceHistoryRequest;
 import com.example.quanly_vlxd.dto.response.MessageResponse;
 import com.example.quanly_vlxd.dto.response.PriceHistoryResponse;
 import com.example.quanly_vlxd.enums.PriceTypeEnums;
-import com.example.quanly_vlxd.service.impl.PriceHistoryServiceImpl;
+import com.example.quanly_vlxd.service.PriceHistoryService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -23,12 +23,12 @@ import static com.example.quanly_vlxd.help.MapErrors.getMapErrors;
 @CrossOrigin("*")
 public class PriceHistoryController {
     @Autowired
-    private  PriceHistoryServiceImpl priceHistoryService;
+    private PriceHistoryService priceHistoryService;
 
 
-    @PostMapping("create-price-history")
+    @PostMapping("create-new-price")
     public ResponseEntity<MessageResponse> createPriceHistory(@Valid @RequestBody PriceHistoryRequest priceHistoryRequest) {
-        return new ResponseEntity<>(priceHistoryService.addPrice(priceHistoryRequest), HttpStatus.CREATED);
+        return priceHistoryService.addPrice(priceHistoryRequest);
     }
 
     @GetMapping("/filter")
@@ -52,8 +52,8 @@ public class PriceHistoryController {
 
         return ResponseEntity.ok(priceHistoryService.filter(filter));
     }
-    @ResponseStatus(HttpStatus.BAD_REQUEST) // Trả về mã 400 BAD_REQUEST
-    @ExceptionHandler(MethodArgumentNotValidException.class) // Xử lý ngoại lệ MethodArgumentNotValidException
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(MethodArgumentNotValidException.class)
     public Map<String, String> handleValidationExceptions(MethodArgumentNotValidException ex) {
         return getMapErrors(ex);
     }
