@@ -164,8 +164,7 @@ public class UserSerViceImpl implements UserService {
             return MessageResponse.builder().message("User does not exist!!").build();
         }
         else {
-            if(user.get().isStatus() && passwordEncoder.matches(changePasswordRequest.getOldPassword(),user.get().getPassword())
-            ){
+            if(user.get().isStatus() && passwordEncoder.matches(changePasswordRequest.getOldPassword(),user.get().getPassword())){
                 if(changePasswordRequest.getNewPassword().equals(changePasswordRequest.getOldPassword())){
                     return MessageResponse.builder().message("new password is the same old password!!!").build();
                 }else {
@@ -196,7 +195,7 @@ public class UserSerViceImpl implements UserService {
                         .role(user.getRole().getRoleName().name())
                         .address(user.getEmployee().getAddress())
                         .dateOfBirth(user.getEmployee().getDob().toString())
-                        .managerId(user.getEmployee().getManager()!=null ? user.getEmployee().getManager().getId():0)
+                        .managerId(user.getEmployee().getManager()!= null ? user.getEmployee().getManager().getId():0)
                         .build();
                 empResponse.add(userResponse);
             }

@@ -27,7 +27,6 @@ public class UserRequest {
     @Pattern(regexp = "0\\d{9}", message = "Phone must start with 0 and have 10 digits")
     private String phone;
 
-    // ManagerId có thể = 0 nếu không có sếp → không dùng @NotNull
     @Min(value = 0, message = "Manager ID must be greater or equal to 0")
     private int managerId;
 
