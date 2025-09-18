@@ -1,0 +1,9 @@
+package com.example.quanly_vlxd.dto.response;
+
+public class WarehouseResponse {
+    private int id;
+    private String name;
+
+    private String location;
+    private
+}

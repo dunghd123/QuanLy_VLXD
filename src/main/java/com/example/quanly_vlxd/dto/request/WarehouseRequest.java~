@@ -1,0 +1,2 @@
+package com.example.quanly_vlxd.dto.request;public class WarehouseRequest {
+}
