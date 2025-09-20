@@ -126,7 +126,7 @@ public class EmployeeServiceImpl implements EmployeeService {
             List<InputInvoice> inputInvoices = inputInvoiceRepo.findByEmployeeId(employee.getId());
             List<OutputInvoice> outputInvoices = outputInvoiceRepo.findByEmployeeId(employee.getId());
             for(InputInvoice inputInvoice: inputInvoices){
-                inputInvoice.setIsActive(false);
+                inputInvoice.setActive(false);
                 inputInvoiceRepo.save(inputInvoice);
             }
             for(OutputInvoice outputInvoice: outputInvoices){

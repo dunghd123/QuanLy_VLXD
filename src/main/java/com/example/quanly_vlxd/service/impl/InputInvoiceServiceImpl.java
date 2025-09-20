@@ -1,5 +1,6 @@
 package com.example.quanly_vlxd.service.impl;
 
+import com.example.quanly_vlxd.dto.request.InputFilterRequest;
 import com.example.quanly_vlxd.dto.request.InputInvoiceDetailRequest;
 import com.example.quanly_vlxd.dto.request.InputInvoiceRequest;
 import com.example.quanly_vlxd.dto.response.InputInvoiceDetailResponse;
@@ -10,6 +11,10 @@ import com.example.quanly_vlxd.enums.InvoiceTypeEnums;
 import com.example.quanly_vlxd.repo.*;
 import com.example.quanly_vlxd.service.InputInvoiceService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -24,6 +29,7 @@ public class InputInvoiceServiceImpl implements InputInvoiceService  {
     private final ProductRepo ProductRepo;
     private final PriceHistoryRepo priceHistoryRepo;
     private final EmployeeRepo employeeRepo;
+    private final UserRepo userRepo;
     private final WarehouseProductRepo warehouseProductRepo;
     // Lấy ra giá nhập theo ID sp
     public double  getInputPriceByProductID(int proid, Date creationTime){
@@ -63,36 +69,36 @@ public class InputInvoiceServiceImpl implements InputInvoiceService  {
     }
     @Override
     public MessageResponse addInputInvoice(InputInvoiceRequest inputInvoiceRequest) {
-        Optional<Supplier> checkSup = supplierRepo.findById(inputInvoiceRequest.getSupID());
+        Optional<Supplier> checkSup = supplierRepo.findById(inputInvoiceRequest.getSupId());
         if (checkSup.isEmpty())
-            return MessageResponse.builder().message("Supplier ID: " + inputInvoiceRequest.getSupID() + " is not exist").build();
-        Optional<Employee> checkEmp = employeeRepo.findById(inputInvoiceRequest.getEmpID());
+            return MessageResponse.builder().message("Supplier ID: " + inputInvoiceRequest.getSupId() + " is not exist").build();
+        Optional<Employee> checkEmp = employeeRepo.findById(inputInvoiceRequest.getEmpId());
         if (checkEmp.isEmpty())
-            return MessageResponse.builder().message("Employee ID: " + inputInvoiceRequest.getEmpID() + " is not exist").build();
+            return MessageResponse.builder().message("Employee ID: " + inputInvoiceRequest.getEmpId() + " is not exist").build();
         // Lưu thông tin hóa đơn nhập
         InputInvoice inputInvoice = InputInvoice.builder()
                 .supplier(checkSup.get())
                 .employee(checkEmp.get())
-                .Status(false)
-                .CreationTime(inputInvoiceRequest.getCreationTime())
-                .UpdateTime(inputInvoiceRequest.getCreationTime())
-                .TotalAmount(0)
-                .IsActive(true)
+                .status(false)
+                .creationTime(inputInvoiceRequest.getCreationTime())
+                .updateTime(inputInvoiceRequest.getCreationTime())
+                .totalAmount(0)
+                .isActive(true)
                 .build();
         InputInvoice saveInputInvoice =  inputInvoiceRepo.save(inputInvoice);
 
         // convert inputInvoiceDetailRequest thành InputInvoiceDetail
         List<InputInvoiceDetail> lst= new ArrayList<>();
         for(InputInvoiceDetailRequest inputInvoiceDetailRequest: inputInvoiceRequest.getListInvoiceDetails()){
-             Optional<Product> checkProduct = ProductRepo.findById(inputInvoiceDetailRequest.getPro_id());
+             Optional<Product> checkProduct = ProductRepo.findById(inputInvoiceDetailRequest.getProId());
             if (checkProduct.isEmpty())
-                return MessageResponse.builder().message("Product ID: " + inputInvoiceDetailRequest.getPro_id() + " is not exist").build();
-            Optional<Warehouse> checkWH = wareHouseRepo.findById(inputInvoiceDetailRequest.getWh_id());
+                return MessageResponse.builder().message("Product ID: " + inputInvoiceDetailRequest.getProId() + " is not exist").build();
+            Optional<Warehouse> checkWH = wareHouseRepo.findById(inputInvoiceDetailRequest.getWhId());
             if (checkWH.isEmpty())
-                return MessageResponse.builder().message("Warehouse ID: " + inputInvoiceDetailRequest.getWh_id() + " is not exist").build();
+                return MessageResponse.builder().message("Warehouse ID: " + inputInvoiceDetailRequest.getWhId() + " is not exist").build();
 
             double quantity= inputInvoiceDetailRequest.getQuantity();
-            double price = getInputPriceByProductID(inputInvoiceDetailRequest.getPro_id(), inputInvoiceRequest.getCreationTime());
+            double price = getInputPriceByProductID(inputInvoiceDetailRequest.getProId(), inputInvoiceRequest.getCreationTime());
             InputInvoiceDetail inputInvoiceDetail = InputInvoiceDetail.builder()
                     .inputInvoice(saveInputInvoice)
                     .product(checkProduct.get())
@@ -147,7 +153,7 @@ public class InputInvoiceServiceImpl implements InputInvoiceService  {
             }
             inputInvoiceDetailRepo.delete(iid);
         }
-        inputInvoice.get().setIsActive(false);
+        inputInvoice.get().setActive(false);
         inputInvoiceRepo.save(inputInvoice.get());
         return MessageResponse.builder().message("Delete input invoice successfully").build();
     }
@@ -157,6 +163,35 @@ public class InputInvoiceServiceImpl implements InputInvoiceService  {
         Optional<InputInvoice> inputInvoice = inputInvoiceRepo.findByInputID(id);
         return inputInvoice.map(this::convertToInputInvoiceResponse).orElse(null);
     }
+
+    @Override
+    public Page<InputInvoiceResponse> getAllInputInvoiceByEmp(InputFilterRequest inputFilterRequest, String username) {
+        Optional<User> user = userRepo.findByUserName(username);
+        if (user.isEmpty()) {
+            throw new RuntimeException("User not found");
+        }
+        Employee employee = employeeRepo.findByUserID(user.get().getId());
+        if (employee == null) {
+            throw new RuntimeException("Employee not found");
+        }
+        Pageable pageable = PageRequest.of(inputFilterRequest.getPageFilter(), inputFilterRequest.getSizeFilter());
+        Specification<InputInvoice> spec = Specification.where(null);
+
+        spec = spec.and((root, query, cb) -> cb.equal(root.get("employee").get("id"), employee.getId()));
+
+        if (inputFilterRequest.getSupNameFilter() != null && !inputFilterRequest.getSupNameFilter().isEmpty()) {
+            spec = spec.and((root, query, cb) ->
+                    cb.like(cb.lower(root.get("supplier").get("name")), "%" + inputFilterRequest.getSupNameFilter().toLowerCase() + "%"));
+        }
+        if (inputFilterRequest.getStatusFilter() != null) {
+            spec = spec.and((root, query, cb) ->
+                    cb.equal(root.get("status"), inputFilterRequest.getStatusFilter()));
+        }
+
+        return inputInvoiceRepo.findAll(spec, pageable)
+                .map(this::convertToInputInvoiceResponse);
+    }
+
     // convert InputInvoice -> InputInvoiceResponse
     private InputInvoiceResponse convertToInputInvoiceResponse(InputInvoice inputInvoice){
         return InputInvoiceResponse.builder()

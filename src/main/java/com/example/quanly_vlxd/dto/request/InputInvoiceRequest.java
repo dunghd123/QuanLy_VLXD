@@ -18,10 +18,10 @@ import java.util.List;
 public class InputInvoiceRequest {
 
     @Min(value = 1, message = "Supplier ID must be Integer and min value equal 1")
-    private int  supID;
+    private int  supId;
 
     @Min(value = 1, message = "Employee ID must be Integer and min value equal 1")
-    private int empID;
+    private int empId;
 
     @NotNull(message = "Creation time can not be null")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+7")

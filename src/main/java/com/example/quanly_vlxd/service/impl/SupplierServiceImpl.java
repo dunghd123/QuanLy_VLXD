@@ -77,7 +77,7 @@ public class SupplierServiceImpl implements SupplierService {
         }
         for(InputInvoice ip: inputInvoiceRepo.findAll()){
             if(ip.getSupplier().getId()==supplier.get().getId()){
-                ip.setIsActive(false);
+                ip.setActive(false);
                 inputInvoiceRepo.save(ip);
             }
         }

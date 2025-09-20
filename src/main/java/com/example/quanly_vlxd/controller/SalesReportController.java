@@ -24,19 +24,14 @@ public class SalesReportController {
     @Autowired
     private SalesReportServiceImpl salesReportService;
 
-    @GetMapping("sales-report-detailed")
-    public List<SalesDetailResponse> generateSalesReportDetailed(@RequestBody SalesDetailReportRequest request) {
-        return salesReportService.generateSalesReportDetailed(request);
-    }
-
-    // Phương thức tạo thống kê doanh thu
-    @GetMapping("sales-report-revenue")
-    public SalesReportResponse generateSalesReportRevenue(@RequestBody SalesDetailReportRequest request) {
-       return salesReportService.generateSalesReportRevenue(request);
-    }
+    //thong ke doanh thu
     @GetMapping("sales-report-by-quater")
         public SalesReportResponse generateSalesReportByQuarter(@Valid @RequestBody SalesRevenueQuarterRequest request) {
         return salesReportService.generateSalesReportByQuarter(request);
+    }
+    @GetMapping("sales-report-revenue")
+    public SalesReportResponse generateSalesReportRevenue(@RequestBody SalesDetailReportRequest request) {
+        return salesReportService.generateSalesReportRevenue(request);
     }
     @GetMapping("total-revenue-by-quater")
     public List<SalesQuarterResponse> generateTotalRevenueAllQuater(@RequestParam int year) {
@@ -50,9 +45,14 @@ public class SalesReportController {
     public SalesReportResponse getTotalAmountInputInvoice(@Valid @RequestBody InputInvoiceReportRequest request) {
         return salesReportService.getTotalAmountInputInvoice(request);
     }
+    //
     @GetMapping("sales-revenue-by-month")
     public List<SalesMonthResponse> getTotalAmountByMonth(@RequestParam int year) {
         return salesReportService.salesRevenueByMonth(year);
+    }
+    @GetMapping("sales-report-detailed")
+    public List<SalesDetailResponse> generateSalesReportDetailed(@RequestBody SalesDetailReportRequest request) {
+        return salesReportService.generateSalesReportDetailed(request);
     }
     @GetMapping("total-amount-by-quater")
     public SalesReportResponse getTotalAmountByQuarter(@Valid @RequestBody SalesRevenueQuarterRequest request) {

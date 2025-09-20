@@ -1,21 +1,25 @@
 package com.example.quanly_vlxd.controller;
 
+import com.example.quanly_vlxd.dto.request.InputFilterRequest;
 import com.example.quanly_vlxd.dto.request.InputInvoiceRequest;
 import com.example.quanly_vlxd.dto.response.InputInvoiceResponse;
 import com.example.quanly_vlxd.dto.response.MessageResponse;
 import com.example.quanly_vlxd.service.impl.InputInvoiceServiceImpl;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.Map;
 
 import static com.example.quanly_vlxd.help.MapErrors.getMapErrors;
 
 @RestController
 @RequestMapping("/api/v1/input-invoice/")
+@CrossOrigin("*")
 @RequiredArgsConstructor
 public class InputInvoiceController {
     private final InputInvoiceServiceImpl inputInvoiceService;
@@ -44,6 +48,20 @@ public class InputInvoiceController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
         return new ResponseEntity<>(inputInvoiceResponse, HttpStatus.OK);
+    }
+    @GetMapping("getAllInputInvoiceByEmp/{username}")
+    public ResponseEntity<Page<InputInvoiceResponse>> getAllInputInvoiceByEmp(
+            @PathVariable(value = "username") String username,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String supName,
+            @RequestParam(required = false) Boolean status){
+        InputFilterRequest filter= new InputFilterRequest();
+        filter.setPageFilter(page);
+        filter.setSizeFilter(size);
+        filter.setSupNameFilter(supName);
+        filter.setStatusFilter(status);
+        return ResponseEntity.ok(inputInvoiceService.getAllInputInvoiceByEmp(filter, username));
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST) // Trả về mã 400 BAD_REQUEST

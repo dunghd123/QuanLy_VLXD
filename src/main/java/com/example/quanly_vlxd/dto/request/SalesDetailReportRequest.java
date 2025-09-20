@@ -21,5 +21,4 @@ public class SalesDetailReportRequest {
     private List<Integer> productIds;
     private List<Integer> customerIds;
     private List<Integer> employeeIds;
-    private String reportType;
 }

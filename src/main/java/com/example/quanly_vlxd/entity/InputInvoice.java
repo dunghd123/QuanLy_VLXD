@@ -19,24 +19,24 @@ public class InputInvoice {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "inp_id")
-    private int Id;
+    private int id;
 
     @Column(name = "inp_creation_time",nullable = false)
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone = "GMT+7")
-    private Date CreationTime;
+    private Date creationTime;
 
     @Column(name = "inp_update_time",nullable = false)
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone = "GMT+7")
-    private Date UpdateTime;
+    private Date updateTime;
 
     @Column(name = "inp_status")
-    private boolean Status;
+    private boolean status;
 
     @Column(name = "inp_total_amount")
-    private double TotalAmount;
+    private double totalAmount;
 
     @Column(name = "isactive")
-    private boolean IsActive;
+    private boolean isActive;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "sup_id", foreignKey = @ForeignKey(name = "FK_INPUT_INVOICE_SUPPLIER"))
