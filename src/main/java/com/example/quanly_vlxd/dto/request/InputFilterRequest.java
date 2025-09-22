@@ -1,5 +1,6 @@
 package com.example.quanly_vlxd.dto.request;
 
+import com.example.quanly_vlxd.enums.InvoiceStatusEnums;
 import lombok.*;
 
 @Getter
@@ -9,7 +10,7 @@ import lombok.*;
 @Builder
 public class InputFilterRequest {
     private String supNameFilter;
-    private Boolean statusFilter;
+    private InvoiceStatusEnums statusFilter;
     private int pageFilter;
     private int sizeFilter;
 }

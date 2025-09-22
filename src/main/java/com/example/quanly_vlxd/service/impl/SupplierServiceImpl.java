@@ -16,7 +16,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -91,6 +93,12 @@ public class SupplierServiceImpl implements SupplierService {
         Pageable pageable = PageRequest.of(page, size);
         return  supplierRepo.getAll(pageable).map(this::convertToDTO);
     }
+
+    @Override
+    public List<SupplierResponse> getAllActiveSup() {
+        return supplierRepo.getAllActiveSup().stream().map(this::convertToDTO).collect(Collectors.toList());
+    }
+
     private SupplierResponse convertToDTO(Supplier supplier){
         return SupplierResponse.builder()
                 .id(supplier.getId())

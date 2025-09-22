@@ -7,14 +7,18 @@ import com.example.quanly_vlxd.dto.response.InputInvoiceDetailResponse;
 import com.example.quanly_vlxd.dto.response.InputInvoiceResponse;
 import com.example.quanly_vlxd.dto.response.MessageResponse;
 import com.example.quanly_vlxd.entity.*;
+import com.example.quanly_vlxd.enums.InvoiceStatusEnums;
 import com.example.quanly_vlxd.enums.InvoiceTypeEnums;
 import com.example.quanly_vlxd.repo.*;
 import com.example.quanly_vlxd.service.InputInvoiceService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -26,7 +30,7 @@ public class InputInvoiceServiceImpl implements InputInvoiceService  {
     private final InputInvoiceDetailRepo inputInvoiceDetailRepo;
     private final SupplierRepo supplierRepo;
     private final WareHouseRepo wareHouseRepo;
-    private final ProductRepo ProductRepo;
+    private final ProductRepo productRepo;
     private final PriceHistoryRepo priceHistoryRepo;
     private final EmployeeRepo employeeRepo;
     private final UserRepo userRepo;
@@ -67,95 +71,139 @@ public class InputInvoiceServiceImpl implements InputInvoiceService  {
             inputInvoiceRepo.save(inputInvoice);
         }
     }
+    @Transactional
     @Override
-    public MessageResponse addInputInvoice(InputInvoiceRequest inputInvoiceRequest) {
-        Optional<Supplier> checkSup = supplierRepo.findById(inputInvoiceRequest.getSupId());
-        if (checkSup.isEmpty())
-            return MessageResponse.builder().message("Supplier ID: " + inputInvoiceRequest.getSupId() + " is not exist").build();
-        Optional<Employee> checkEmp = employeeRepo.findById(inputInvoiceRequest.getEmpId());
-        if (checkEmp.isEmpty())
-            return MessageResponse.builder().message("Employee ID: " + inputInvoiceRequest.getEmpId() + " is not exist").build();
-        // Lưu thông tin hóa đơn nhập
-        InputInvoice inputInvoice = InputInvoice.builder()
-                .supplier(checkSup.get())
-                .employee(checkEmp.get())
-                .status(false)
-                .creationTime(inputInvoiceRequest.getCreationTime())
-                .updateTime(inputInvoiceRequest.getCreationTime())
-                .totalAmount(0)
-                .isActive(true)
-                .build();
-        InputInvoice saveInputInvoice =  inputInvoiceRepo.save(inputInvoice);
+    public ResponseEntity<MessageResponse> addInputInvoice(InputInvoiceRequest inputInvoiceRequest) {
+        try {
+            validateInputInvoiceRequest(inputInvoiceRequest);
+            Supplier supplier = supplierRepo.findById(inputInvoiceRequest.getSupId()).get();
+            Employee employee = employeeRepo.findById(inputInvoiceRequest.getEmpId()).get();
 
-        // convert inputInvoiceDetailRequest thành InputInvoiceDetail
-        List<InputInvoiceDetail> lst= new ArrayList<>();
-        for(InputInvoiceDetailRequest inputInvoiceDetailRequest: inputInvoiceRequest.getListInvoiceDetails()){
-             Optional<Product> checkProduct = ProductRepo.findById(inputInvoiceDetailRequest.getProId());
-            if (checkProduct.isEmpty())
-                return MessageResponse.builder().message("Product ID: " + inputInvoiceDetailRequest.getProId() + " is not exist").build();
-            Optional<Warehouse> checkWH = wareHouseRepo.findById(inputInvoiceDetailRequest.getWhId());
-            if (checkWH.isEmpty())
-                return MessageResponse.builder().message("Warehouse ID: " + inputInvoiceDetailRequest.getWhId() + " is not exist").build();
-
-            double quantity= inputInvoiceDetailRequest.getQuantity();
-            double price = getInputPriceByProductID(inputInvoiceDetailRequest.getProId(), inputInvoiceRequest.getCreationTime());
-            InputInvoiceDetail inputInvoiceDetail = InputInvoiceDetail.builder()
-                    .inputInvoice(saveInputInvoice)
-                    .product(checkProduct.get())
-                    .warehouse(checkWH.get())
-                    .Quantity(quantity)
-                    .UnitPrice(price)
-                    .Amount(quantity * price)
+            InputInvoice inputInvoice = InputInvoice.builder()
+                    .supplier(supplier)
+                    .employee(employee)
+                    .status(InvoiceStatusEnums.PENDING)
+                    .creationTime(inputInvoiceRequest.getCreationTime())
+                    .updateTime(inputInvoiceRequest.getUpdateTime())
+                    .totalAmount(0)
+                    .isActive(true)
                     .build();
-            lst.add(inputInvoiceDetail);
-            // Cap nhat so luong vao kho
-            Optional<WareHouse_Product> warehouseProduct = warehouseProductRepo.findByWarehouseAndProduct(checkWH.get().getId(), checkProduct.get().getId());
-            if (warehouseProduct.isPresent()) {
-                warehouseProduct.get().setQuantity(warehouseProduct.get().getQuantity() + quantity);
-                warehouseProduct.get().setLastUpdated(inputInvoiceRequest.getCreationTime());
-                warehouseProductRepo.save(warehouseProduct.get());
+            InputInvoice saveInputInvoice = inputInvoiceRepo.save(inputInvoice);
+            List<InputInvoiceDetail> details = new ArrayList<>();
+            double total = 0.0;
+
+            for (InputInvoiceDetailRequest d : inputInvoiceRequest.getListInvoiceDetails()) {
+                Product product = productRepo.findById(d.getProId()).get();
+                Warehouse warehouse = wareHouseRepo.findById(d.getWhId()).get();
+
+                double quantity = d.getQuantity();
+                double price = getInputPriceByProductID(d.getProId(), inputInvoiceRequest.getCreationTime());
+
+                InputInvoiceDetail detail = InputInvoiceDetail.builder()
+                        .inputInvoice(saveInputInvoice)
+                        .product(product)
+                        .warehouse(warehouse)
+                        .quantity(quantity)
+                        .unitPrice(price)
+                        .amount(quantity * price)
+                        .build();
+                details.add(detail);
+                total += detail.getAmount();
             }
-        }
-        inputInvoiceDetailRepo.saveAll(lst);
+            inputInvoiceDetailRepo.saveAll(details);
 
-        // Tinh tong tien
-        double total=0.0;
-        for(InputInvoiceDetail iid: lst){
-            total += iid.getAmount();
-        }
-        saveInputInvoice.setTotalAmount(total);
-        inputInvoiceRepo.save(saveInputInvoice);
-        return MessageResponse.builder().message("Add input invoice successfully").build();
-}
+            saveInputInvoice.setTotalAmount(total);
+            inputInvoiceRepo.save(saveInputInvoice);
 
-    @Override
-    public MessageResponse updateInputInvoice(int id) {
-        Optional<InputInvoice> inputInvoice = inputInvoiceRepo.findById(id);
-        if(inputInvoice.isEmpty())
-            return MessageResponse.builder().message("Input invoice does not exist!!").build();
-        inputInvoice.get().setUpdateTime(new Date());
-        inputInvoice.get().setStatus(true);
-        inputInvoiceRepo.save(inputInvoice.get());
-        return MessageResponse.builder().message("the input invoice has been completed").build();
+            return ResponseEntity.ok(MessageResponse.builder().message("Add input invoice successfully").build());
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.badRequest()
+                    .body(MessageResponse.builder().message(ex.getMessage()).build());
+        }
     }
 
     @Override
-    public MessageResponse deleteInputInvoice(int id) {
+    @Transactional
+    public ResponseEntity<MessageResponse> ApproveInputInvoice(int inputInvoiceId) {
+        InputInvoice invoice = inputInvoiceRepo.findById(inputInvoiceId)
+                .orElseThrow(() -> new RuntimeException("Invoice not found"));
+
+        if (invoice.getStatus() != InvoiceStatusEnums.PENDING) {
+            throw new RuntimeException("Only pending invoices can be approved");
+        }
+
+        for (InputInvoiceDetail detail : invoice.getInputInvoiceDetails()) {
+            Warehouse warehouse = detail.getWarehouse();
+            Product product = detail.getProduct();
+
+            Optional<WareHouse_Product> whProductOp = warehouseProductRepo
+                    .findByWarehouseAndProduct(warehouse.getId(), product.getId());
+            if(whProductOp.isEmpty()){
+                return ResponseEntity.badRequest().body(MessageResponse.builder().message("Warehouse product not found").build());
+            }
+            WareHouse_Product whProduct = whProductOp.get();
+            whProduct.setQuantity(whProduct.getQuantity() + detail.getQuantity());
+            whProduct.setLastUpdated(new Date());
+            warehouseProductRepo.save(whProduct);
+        }
+
+        invoice.setStatus(InvoiceStatusEnums.APPROVED);
+        inputInvoiceRepo.save(invoice);
+
+        return ResponseEntity.ok(MessageResponse.builder().message("Invoice approved successfully").build());
+    }
+
+    private void validateInputInvoiceRequest(InputInvoiceRequest request) {
+        if (supplierRepo.findById(request.getSupId()).isEmpty()) {
+            throw new IllegalArgumentException("Supplier ID " + request.getSupId() + " is not exist");
+        }
+        if (employeeRepo.findById(request.getEmpId()).isEmpty()) {
+            throw new IllegalArgumentException("Employee ID " + request.getEmpId() + " is not exist");
+        }
+
+        for (InputInvoiceDetailRequest detail : request.getListInvoiceDetails()) {
+            if (productRepo.findById(detail.getProId()).isEmpty()) {
+                throw new IllegalArgumentException("Product ID " + detail.getProId() + " is not exist");
+            }
+            if (wareHouseRepo.findById(detail.getWhId()).isEmpty()) {
+                throw new IllegalArgumentException("Warehouse ID " + detail.getWhId() + " is not exist");
+            }
+            if (detail.getQuantity() <= 0) {
+                throw new IllegalArgumentException("Quantity must be greater than 0 for product ID " + detail.getProId());
+            }
+        }
+    }
+
+    @Override
+    public ResponseEntity<MessageResponse> updateInputInvoice(int id, InputInvoiceRequest inputInvoiceRequest) {
+        try {
+            validateInputInvoiceRequest(inputInvoiceRequest);
+            Supplier supplier = supplierRepo.findById(inputInvoiceRequest.getSupId()).get();
+            Employee employee = employeeRepo.findById(inputInvoiceRequest.getEmpId()).get();
+            Optional<InputInvoice> inputInvoiceOp = inputInvoiceRepo.findById(id);
+            if(inputInvoiceOp.isEmpty()){
+                return ResponseEntity.badRequest().body(MessageResponse.builder().message("Input invoice does not exist!!").build());
+            }
+            InputInvoice inputInvoice = inputInvoiceOp.get();
+            inputInvoice.setSupplier(supplier);
+            inputInvoice.setEmployee(employee);
+            inputInvoice.setUpdateTime(inputInvoiceRequest.getCreationTime());
+            inputInvoiceRepo.save(inputInvoice);
+            return ResponseEntity.ok(MessageResponse.builder().message("Update input invoice successfully").build());
+        }catch (IllegalArgumentException ex) {
+            return ResponseEntity.badRequest().body(MessageResponse.builder().message(ex.getMessage()).build());
+        }
+
+    }
+
+    @Override
+    public ResponseEntity<MessageResponse> deleteInputInvoice(int id) {
         Optional<InputInvoice> inputInvoice = inputInvoiceRepo.findById(id);
         if(inputInvoice.isEmpty())
-            return MessageResponse.builder().message("Input invoice does not exist!!").build();
-        for(InputInvoiceDetail iid: inputInvoice.get().getInputInvoiceDetails()){
-            Optional<WareHouse_Product> warehouseProduct = warehouseProductRepo.findByWarehouseAndProduct(iid.getWarehouse().getId(), iid.getProduct().getId());
-            if (warehouseProduct.isPresent()) {
-                warehouseProduct.get().setQuantity(warehouseProduct.get().getQuantity() - iid.getQuantity());
-                warehouseProduct.get().setLastUpdated(new Date());
-                warehouseProductRepo.save(warehouseProduct.get());
-            }
-            inputInvoiceDetailRepo.delete(iid);
-        }
+            return ResponseEntity.badRequest().body(MessageResponse.builder().message("Input invoice does not exist!!").build());
         inputInvoice.get().setActive(false);
         inputInvoiceRepo.save(inputInvoice.get());
-        return MessageResponse.builder().message("Delete input invoice successfully").build();
+        return ResponseEntity.ok(MessageResponse.builder().message("Delete input invoice successfully").build());
     }
 
     @Override
@@ -174,7 +222,8 @@ public class InputInvoiceServiceImpl implements InputInvoiceService  {
         if (employee == null) {
             throw new RuntimeException("Employee not found");
         }
-        Pageable pageable = PageRequest.of(inputFilterRequest.getPageFilter(), inputFilterRequest.getSizeFilter());
+        Sort sort = Sort.by(Sort.Order.desc("creationTime"));
+        Pageable pageable = PageRequest.of(inputFilterRequest.getPageFilter(), inputFilterRequest.getSizeFilter(), sort);
         Specification<InputInvoice> spec = Specification.where(null);
 
         spec = spec.and((root, query, cb) -> cb.equal(root.get("employee").get("id"), employee.getId()));
@@ -192,7 +241,6 @@ public class InputInvoiceServiceImpl implements InputInvoiceService  {
                 .map(this::convertToInputInvoiceResponse);
     }
 
-    // convert InputInvoice -> InputInvoiceResponse
     private InputInvoiceResponse convertToInputInvoiceResponse(InputInvoice inputInvoice){
         return InputInvoiceResponse.builder()
                 .id(inputInvoice.getId())
@@ -200,11 +248,11 @@ public class InputInvoiceServiceImpl implements InputInvoiceService  {
                 .empName(inputInvoice.getEmployee().getName())
                 .creationTime(inputInvoice.getCreationTime())
                 .updateTime(inputInvoice.getUpdateTime())
+                .status(inputInvoice.getStatus().name())
                 .listInvoiceDetails(convertToSetInputInvoiceDetailResponse(inputInvoice.getInputInvoiceDetails()))
                 .totalAmount(inputInvoice.getTotalAmount())
                 .build();
     }
-    // convert InputInvoiceDetail -> InputInvoiceDetailResponse
     private InputInvoiceDetailResponse convertToInputInvoiceDetailResponse(InputInvoiceDetail inputInvoiceDetail){
         return InputInvoiceDetailResponse.builder()
                 .id(inputInvoiceDetail.getId())

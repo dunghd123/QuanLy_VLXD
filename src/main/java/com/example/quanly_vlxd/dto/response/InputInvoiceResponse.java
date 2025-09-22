@@ -19,7 +19,7 @@ public class InputInvoiceResponse {
     private Date creationTime;
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+7")
     private Date updateTime;
-    private boolean status;
+    private String status;
     private Set<InputInvoiceDetailResponse> listInvoiceDetails;
     private double totalAmount;
 }

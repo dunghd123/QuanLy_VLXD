@@ -15,13 +15,13 @@ public class InputInvoiceDetail {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "iid_id")
-    private int Id;
+    private int id;
     @Column(name = "iid_quantity")
-    private double Quantity;
+    private double quantity;
     @Column(name = "iid_unit_price")
-    private double UnitPrice;
+    private double unitPrice;
     @Column(name = "iid_amount")
-    private double Amount;
+    private double amount;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "inp_id", foreignKey = @ForeignKey(name = "FK_INPUT_INVOICE_DETAIL_INVOICE"))

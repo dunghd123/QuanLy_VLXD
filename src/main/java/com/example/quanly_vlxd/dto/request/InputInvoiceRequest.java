@@ -27,6 +27,10 @@ public class InputInvoiceRequest {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+7")
     private Date creationTime;
 
+    @NotNull(message = "Update time can not be null")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+7")
+    private Date updateTime;
+
     @NotEmpty(message = "Input Invoice details list can not be empty")
     private List<InputInvoiceDetailRequest> listInvoiceDetails;
 }

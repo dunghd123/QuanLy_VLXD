@@ -13,7 +13,7 @@ import java.util.Optional;
 @Repository
 public interface InputInvoiceRepo extends JpaRepository<InputInvoice,Integer>, JpaSpecificationExecutor<InputInvoice> {
     @Query(value = "select * from input_invoices i where i.isactive = 1 and i.inp_id = ?1",nativeQuery = true)
-    Optional<InputInvoice> findByInputID(int  id);
+    Optional<InputInvoice> findByInputID(int id);
     @Query(value = "select * from input_invoices i where i.isactive = 1 and i.emp_id = ?1",nativeQuery = true)
     List<InputInvoice> findByEmployeeId(int employeeId);
     //Theo thoi gian

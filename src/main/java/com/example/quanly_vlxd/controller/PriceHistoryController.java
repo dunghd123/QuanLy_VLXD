@@ -52,6 +52,15 @@ public class PriceHistoryController {
 
         return ResponseEntity.ok(priceHistoryService.filter(filter));
     }
+    @GetMapping("/load-input-current-price/{id}")
+    public ResponseEntity<PriceHistoryResponse> loadInputCurrentPriceByProductId(@PathVariable(value = "id") int productId) {
+        return ResponseEntity.ok(priceHistoryService.loadInputCurrentPriceByProductId(productId));
+    }
+    @GetMapping("/load-output-current-price/{id}")
+    public ResponseEntity<PriceHistoryResponse> loadOutputCurrentPriceByProductId(@PathVariable(value = "id") int productId) {
+        return ResponseEntity.ok(priceHistoryService.loadOutputCurrentPriceByProductId(productId));
+    }
+
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public Map<String, String> handleValidationExceptions(MethodArgumentNotValidException ex) {

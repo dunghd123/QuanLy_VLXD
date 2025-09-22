@@ -6,11 +6,14 @@ import com.example.quanly_vlxd.dto.response.SupplierResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 
+import java.util.List;
+
 public interface SupplierService {
     ResponseEntity<MessageResponse> addSupplier(SupplierRequest supplierRequest);
     ResponseEntity<MessageResponse> updateSupplier(int id, SupplierRequest supplierRequest);
     ResponseEntity<MessageResponse> deleteSuppler(int id);
 
     Page<SupplierResponse> getList(int page, int size);
+    List<SupplierResponse> getAllActiveSup();
 
 }

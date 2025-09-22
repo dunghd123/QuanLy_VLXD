@@ -1,5 +1,6 @@
 package com.example.quanly_vlxd.entity;
 
+import com.example.quanly_vlxd.enums.InvoiceStatusEnums;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
@@ -30,7 +31,8 @@ public class InputInvoice {
     private Date updateTime;
 
     @Column(name = "inp_status")
-    private boolean status;
+    @Enumerated(EnumType.STRING)
+    private InvoiceStatusEnums status;
 
     @Column(name = "inp_total_amount")
     private double totalAmount;

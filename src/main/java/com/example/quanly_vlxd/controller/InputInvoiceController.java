@@ -4,6 +4,7 @@ import com.example.quanly_vlxd.dto.request.InputFilterRequest;
 import com.example.quanly_vlxd.dto.request.InputInvoiceRequest;
 import com.example.quanly_vlxd.dto.response.InputInvoiceResponse;
 import com.example.quanly_vlxd.dto.response.MessageResponse;
+import com.example.quanly_vlxd.enums.InvoiceStatusEnums;
 import com.example.quanly_vlxd.service.impl.InputInvoiceServiceImpl;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -26,15 +27,15 @@ public class InputInvoiceController {
 
     @PostMapping("add-input-invoice")
     public ResponseEntity<MessageResponse> addInputInvoice(@Valid @RequestBody InputInvoiceRequest inputInvoiceRequest){
-        return new ResponseEntity<>(inputInvoiceService.addInputInvoice(inputInvoiceRequest), HttpStatus.CREATED);
+        return inputInvoiceService.addInputInvoice(inputInvoiceRequest);
     }
     @PutMapping("update-input-invoice/{id}")
-    public ResponseEntity<MessageResponse> updateInputInvoice(@PathVariable(value = "id") int id){
-        return new ResponseEntity<>(inputInvoiceService.updateInputInvoice(id), HttpStatus.OK);
+    public ResponseEntity<MessageResponse> updateInputInvoice(@PathVariable(value = "id") int id, @Valid @RequestBody InputInvoiceRequest inputInvoiceRequest){
+        return inputInvoiceService.updateInputInvoice(id,inputInvoiceRequest);
     }
     @DeleteMapping("delete-input-invoice/{id}")
     public ResponseEntity<MessageResponse> deleteInputInvoice(@PathVariable(value = "id") int id){
-        return new ResponseEntity<>(inputInvoiceService.deleteInputInvoice(id), HttpStatus.OK);
+        return inputInvoiceService.deleteInputInvoice(id);
     }
 
     @PutMapping("update-unitprice")
@@ -55,12 +56,12 @@ public class InputInvoiceController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) String supName,
-            @RequestParam(required = false) Boolean status){
+            @RequestParam(required = false) String status){
         InputFilterRequest filter= new InputFilterRequest();
         filter.setPageFilter(page);
         filter.setSizeFilter(size);
         filter.setSupNameFilter(supName);
-        filter.setStatusFilter(status);
+        filter.setStatusFilter(status != null ? Enum.valueOf(InvoiceStatusEnums.class, status.toUpperCase()) : null);
         return ResponseEntity.ok(inputInvoiceService.getAllInputInvoiceByEmp(filter, username));
     }
 

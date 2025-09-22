@@ -98,6 +98,17 @@ public class PriceHistoryServiceImpl implements PriceHistoryService {
         return priceHistoryRepo.findAll(spec, pageable)
                 .map(this::convertToDTO);
     }
+
+    @Override
+    public PriceHistoryResponse loadInputCurrentPriceByProductId(int productId) {
+        return priceHistoryRepo.findActivePriceByProductId(productId, InvoiceTypeEnums.INPUT.name()).map(this::convertToDTO).get();
+    }
+
+    @Override
+    public PriceHistoryResponse loadOutputCurrentPriceByProductId(int productId) {
+        return priceHistoryRepo.findActivePriceByProductId(productId, InvoiceTypeEnums.OUTPUT.name()).map(this::convertToDTO).get();
+    }
+
     private Date parseDate(String dateStr) {
         String[] patterns = { "yyyy-MM-dd'T'HH:mm:ss", "yyyy-MM-dd HH:mm:ss" };
         for (String pattern : patterns) {

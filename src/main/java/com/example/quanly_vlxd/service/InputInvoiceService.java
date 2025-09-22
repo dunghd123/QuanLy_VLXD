@@ -5,12 +5,14 @@ import com.example.quanly_vlxd.dto.request.InputInvoiceRequest;
 import com.example.quanly_vlxd.dto.response.InputInvoiceResponse;
 import com.example.quanly_vlxd.dto.response.MessageResponse;
 import org.springframework.data.domain.Page;
+import org.springframework.http.ResponseEntity;
 
 public interface InputInvoiceService {
 
-    MessageResponse addInputInvoice(InputInvoiceRequest inputInvoiceRequest);
-    MessageResponse updateInputInvoice(int id);
-    MessageResponse deleteInputInvoice(int id);
+    ResponseEntity<MessageResponse> addInputInvoice(InputInvoiceRequest inputInvoiceRequest);
+    ResponseEntity<MessageResponse> ApproveInputInvoice(int inputInvoiceId);
+    ResponseEntity<MessageResponse> updateInputInvoice(int id, InputInvoiceRequest inputInvoiceRequest);
+    ResponseEntity<MessageResponse> deleteInputInvoice(int id);
     InputInvoiceResponse getInputInvoice(int id);
     Page<InputInvoiceResponse> getAllInputInvoiceByEmp(InputFilterRequest inputFilter, String username);
 }

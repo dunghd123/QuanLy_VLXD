@@ -47,6 +47,11 @@ public class EmployeeController {
         return employeeServiceImpl.getAllManager();
     }
 
+    @GetMapping("getEmpByUsername")
+    public EmpResponse getEmpByUsername(@RequestParam String username){
+        return employeeServiceImpl.getEmpByUsername(username);
+    }
+
     @ResponseStatus(HttpStatus.BAD_REQUEST) // Trả về mã 400 BAD_REQUEST
     @ExceptionHandler(MethodArgumentNotValidException.class) // Xử lý ngoại lệ MethodArgumentNotValidException
     public Map<String, String> handleValidationExceptions(MethodArgumentNotValidException ex) {

@@ -152,6 +152,17 @@ public class EmployeeServiceImpl implements EmployeeService {
         return employeeRepo.getAllManager().stream().map(this::convertToDTO).collect(Collectors.toList());
     }
 
+    @Override
+    public EmpResponse getEmpByUsername(String username) {
+        Optional<User> optionalUser= userRepo.findByUserName(username);
+        if(optionalUser.isEmpty()){
+            return null;
+        }else {
+            Employee employee= employeeRepo.findByUserID(optionalUser.get().getId());
+            return convertToDTO(employee);
+        }
+    }
+
     private EmpResponse convertToDTO(Employee employee) {
         return EmpResponse.builder()
                 .id(employee.getId())

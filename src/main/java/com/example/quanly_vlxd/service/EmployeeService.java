@@ -17,4 +17,5 @@ public interface EmployeeService {
     ResponseEntity<MessageResponse> deleteUser(String username);
     Page<EmpResponse> getAllEmployee(int page, int size);
     List<EmpResponse> getAllManager();
+    EmpResponse getEmpByUsername(String username);
 }

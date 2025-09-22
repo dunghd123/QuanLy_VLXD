@@ -12,4 +12,7 @@ public interface PriceHistoryService {
     ResponseEntity<MessageResponse> addPrice(PriceHistoryRequest priceHistoryRequest);
 
     Page<PriceHistoryResponse> filter(PriceFilterRequest req);
+
+    PriceHistoryResponse loadInputCurrentPriceByProductId(int productId);
+    PriceHistoryResponse loadOutputCurrentPriceByProductId(int productId);
 }

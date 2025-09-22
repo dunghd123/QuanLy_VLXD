@@ -15,4 +15,5 @@ public interface PriceHistoryRepo extends JpaRepository<ProductPriceHistory,Inte
     @Query(value = "SELECT *  FROM product_price_history p WHERE p.pro_id = :productId AND p.isactive = 1 AND p.pph_invoice_type like :type", nativeQuery = true)
     Optional<ProductPriceHistory> findActivePriceByProductId(@Param("productId") int productId,@Param("type") String type );
 
+
 }

@@ -7,8 +7,13 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public interface WareHouseRepo extends JpaRepository<Warehouse,Integer> {
     @Query(value = "select * from warehouses w where w.isactive = 1",nativeQuery = true)
     Page<Warehouse> getAll(Pageable pageable);
+
+    @Query(value = "select * from warehouses w where w.isactive = 1",nativeQuery = true)
+    List<Warehouse> getAllActiveWarehouse();
 }

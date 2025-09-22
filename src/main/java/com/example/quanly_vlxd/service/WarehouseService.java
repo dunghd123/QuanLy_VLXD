@@ -5,10 +5,13 @@ import com.example.quanly_vlxd.dto.response.MessageResponse;
 import com.example.quanly_vlxd.dto.response.WarehouseResponse;
 import org.springframework.data.domain.Page;
 
+import java.util.List;
+
 public interface WarehouseService {
     MessageResponse addWarehouse(WarehouseRequest warehouseRequest);
     MessageResponse updateWarehouse(int id, WarehouseRequest warehouseRequest);
     MessageResponse deleteWarehouse(int id);
 
     Page<WarehouseResponse> getList(int page, int size);
+    List<WarehouseResponse> getAllActiveWarehouse();
 }
