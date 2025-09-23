@@ -20,7 +20,7 @@ public class OutputInvoiceResponse {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+7")
     private Date updateTime;
     private String shipAddress;
-    private boolean status;
+    private String status;
     private Set<OutputInvoiceDetailResponse> listOutputInvoiceDetails;
     private double totalAmount;
 }

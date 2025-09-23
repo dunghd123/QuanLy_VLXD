@@ -1,11 +1,14 @@
 package com.example.quanly_vlxd.controller;
 
+import com.example.quanly_vlxd.dto.request.OutputFilterRequest;
 import com.example.quanly_vlxd.dto.request.OutputInvoiceRequest;
 import com.example.quanly_vlxd.dto.response.MessageResponse;
 import com.example.quanly_vlxd.dto.response.OutputInvoiceResponse;
+import com.example.quanly_vlxd.enums.InvoiceStatusEnums;
 import com.example.quanly_vlxd.service.impl.OutputInvoiceServiceImpl;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -17,40 +20,42 @@ import static com.example.quanly_vlxd.help.MapErrors.getMapErrors;
 
 @RestController
 @RequestMapping("/api/v1/output-invoice/")
+@CrossOrigin("*")
 @RequiredArgsConstructor
 public class OutputInvoiceController {
     private final OutputInvoiceServiceImpl outputInvoiceService;
 
     @PostMapping("add-output-invoice")
     public ResponseEntity<MessageResponse> addOutputInvoice(@Valid @RequestBody OutputInvoiceRequest outputInvoiceRequest){
-        return new ResponseEntity<>(outputInvoiceService.addOutputInvoice(outputInvoiceRequest), HttpStatus.CREATED);
+        return outputInvoiceService.addOutputInvoice(outputInvoiceRequest);
     }
 
     @PutMapping("update-output-invoice/{id}")
-    public ResponseEntity<MessageResponse> updateOutputInvoice(@PathVariable(value = "id") int id){
-        return new ResponseEntity<>(outputInvoiceService.updateOutputInvoice(id), HttpStatus.OK);
-    }
-    @PutMapping("update-oi")
-    public void updateOI(){
-        outputInvoiceService.updateOI();
+    public ResponseEntity<MessageResponse> updateOutputInvoice(@PathVariable(value = "id") int id, @Valid @RequestBody OutputInvoiceRequest outputInvoiceRequest){
+        return outputInvoiceService.updateOutputInvoice(id, outputInvoiceRequest);
     }
 
     @DeleteMapping("delete-output-invoice/{id}")
     public ResponseEntity<MessageResponse> deleteOutputInvoice(@PathVariable(value = "id") int id){
-        return new ResponseEntity<>(outputInvoiceService.deleteOutputInvoice(id), HttpStatus.OK);
+        return outputInvoiceService.deleteOutputInvoice(id);
     }
 
-    @GetMapping("find-output-invoice/{id}")
-    public ResponseEntity<OutputInvoiceResponse> findOutputInvoice(@PathVariable(value = "id") int id){
-        OutputInvoiceResponse outputInvoiceResponse = outputInvoiceService.findOutputInvoice(id);
-        if(outputInvoiceResponse == null) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-        return new ResponseEntity<>(outputInvoiceResponse, HttpStatus.OK);
+    @GetMapping("getAllOutputInvoiceByEmp/{username}")
+    public ResponseEntity<Page<OutputInvoiceResponse>> getAllOutputInvoiceByEmp(
+            @PathVariable(value = "username") String username,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String cusName,
+            @RequestParam(required = false) String status){
+        OutputFilterRequest filter= new OutputFilterRequest();
+        filter.setPageFilter(page);
+        filter.setSizeFilter(size);
+        filter.setCusNameFilter(cusName);
+        filter.setStatusFilter(status != null ? Enum.valueOf(InvoiceStatusEnums.class, status.toUpperCase()) : null);
+        return ResponseEntity.ok(outputInvoiceService.getAllOutputInvoiceByEmp(filter,username));
     }
-
-    @ResponseStatus(HttpStatus.BAD_REQUEST) // Trả về mã 400 BAD_REQUEST
-    @ExceptionHandler(MethodArgumentNotValidException.class) // Xử lý ngoại lệ MethodArgumentNotValidException
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(MethodArgumentNotValidException.class)
     public Map<String, String> handleValidationExceptions(MethodArgumentNotValidException ex) {
         return getMapErrors(ex);
     }

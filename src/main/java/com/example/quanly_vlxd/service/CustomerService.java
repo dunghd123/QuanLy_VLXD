@@ -6,10 +6,13 @@ import com.example.quanly_vlxd.dto.response.MessageResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 
+import java.util.List;
+
 public interface CustomerService {
     ResponseEntity<MessageResponse> addCustomer(CustomerRequest customerRequest);
     ResponseEntity<MessageResponse> updateCustomer(int id, CustomerRequest customerRequest);
 
     ResponseEntity<MessageResponse> deleteCustomer(int id);
     Page<CusResponse> getAllCustomer(int page, int size);
+    List<CusResponse> getAllActiveCustomer();
 }

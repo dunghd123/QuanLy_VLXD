@@ -77,7 +77,7 @@ public class CustomerServiceImpl implements CustomerService {
         }
         for (OutputInvoice outputInvoice : outputInvoiceRepo.findAll()) {
             if (outputInvoice.getCustomer().getId() == id) {
-                outputInvoice.setIsActive(false);
+                outputInvoice.setActive(false);
                 outputInvoiceRepo.save(outputInvoice);
             }
         }
@@ -107,10 +107,16 @@ public class CustomerServiceImpl implements CustomerService {
         Pageable pageable = PageRequest.of(page, size);
         return customerRepo.getAll(pageable).map(this::convertToDTO);
     }
+
+    @Override
+    public List<CusResponse> getAllActiveCustomer() {
+        return customerRepo.getAllActiveCustomer().stream().map(this::convertToDTO).toList();
+    }
+
     private CusResponse convertToDTO(Customer customer) {
         return CusResponse.builder()
                 .id(customer.getId())
-                .name(convertName(customer.getName()))
+                .name(customer.getName())
                 .address(customer.getAddress())
                 .phone(customer.getPhoneNum())
                 .build();

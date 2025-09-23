@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 import static com.example.quanly_vlxd.help.MapErrors.getMapErrors;
@@ -44,6 +45,11 @@ public class CustomerController {
     public Page<CusResponse> getAll(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size){
         return customerServiceImpl.getAllCustomer(page,size);
     }
+    @GetMapping("getAllActiveCustomer")
+    public ResponseEntity<List<CusResponse>> getAllActiveCustomer(){
+        return ResponseEntity.ok(customerServiceImpl.getAllActiveCustomer());
+    }
+
     @ResponseStatus(HttpStatus.BAD_REQUEST) // Trả về mã 400 BAD_REQUEST
     @ExceptionHandler(MethodArgumentNotValidException.class) // Xử lý ngoại lệ MethodArgumentNotValidException
     public Map<String, String> handleValidationExceptions(MethodArgumentNotValidException ex) {

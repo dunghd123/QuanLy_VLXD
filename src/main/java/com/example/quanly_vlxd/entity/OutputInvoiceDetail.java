@@ -17,13 +17,13 @@ public class OutputInvoiceDetail {
     @Column(name = "oid_id")
     private int id;
     @Column(name = "pro_id",nullable = false)
-    private int Pro_Id;
+    private int proId;
     @Column(name = "oid_quantity",nullable = false)
     private double quantity;
     @Column(name = "oid_unit_price",nullable = false)
     private double unitPrice;
     @Column (name = "oid_amount",nullable = false)
-    private double Amount;
+    private double amount;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "oi_id", foreignKey = @ForeignKey(name = "FK_OUTPUT_INVOICE_DETAIL_OUTPUT_INVOICE"))

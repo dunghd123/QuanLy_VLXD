@@ -68,7 +68,7 @@ public class SalesReportServiceImpl implements SalesReportService {
     private SalesDetailResponse mapToSalesDetailResponse(OutputInvoice invoice,OutputInvoiceDetail detail) {
         Optional<Employee> employee = employeeRepository.findById(invoice.getEmployee().getId());
         Optional<Customer> customer = customerRepository.findById(invoice.getCustomer().getId());
-        Optional<Product> product = productRepository.findById(detail.getPro_Id());
+        Optional<Product> product = productRepository.findById(detail.getProId());
         Optional<Warehouse> warehouse = warehouseRepository.findById(detail.getWarehouse().getId());
         if(employee.isEmpty() || customer.isEmpty() || product.isEmpty() || warehouse.isEmpty()) {
             return null;
@@ -81,7 +81,7 @@ public class SalesReportServiceImpl implements SalesReportService {
                 .employeeID(employee.get().getId())
                 .employeeName(employee.get().getName())
                 .productName(product.get().getName())
-                .productID(detail.getPro_Id())
+                .productID(detail.getProId())
                 .warehouseName(warehouse.get().getName())
                 .unitMeasure(product.get().getUnitMeasure())
                 .unitPrice(detail.getUnitPrice())
@@ -456,7 +456,7 @@ public class SalesReportServiceImpl implements SalesReportService {
                     .total(BigDecimal.ZERO)
                     .build();
             for(OutputInvoiceDetail detail : details) {
-                if(i.equals(detail.getPro_Id())) {
+                if(i.equals(detail.getProId())) {
                     quantity += detail.getQuantity();
                     total =total.add(BigDecimal.valueOf(detail.getAmount()));
                     salesProduct.setQuantity(quantity);

@@ -2,7 +2,6 @@ package com.example.quanly_vlxd.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
@@ -18,18 +17,21 @@ import java.util.List;
 
 public class OutputInvoiceRequest {
     @Min(value = 1, message = "Customer ID must be Integer and min value equal 1")
-    private int  cusID;
+    private int  cusId;
 
     @Min(value = 1, message = "Employee ID must be Integer and min value equal 1")
-    private int empID;
+    private int empId;
 
     @NotNull(message = "Creation time can not be null")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+7")
     private Date creationTime;
 
-    @NotBlank(message = "Shipping address is required")
+    @NotNull(message = "Update time can not be null")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+7")
+    private Date updateTime;
+
     private String shipAddress;
 
     @NotEmpty(message = "Output Invoice details list can not be empty")
-    private List<OutputInvoiceDetailRequest> listOutputDetails;
+    private List<OutputInvoiceDetailRequest> listInvoiceDetails;
 }

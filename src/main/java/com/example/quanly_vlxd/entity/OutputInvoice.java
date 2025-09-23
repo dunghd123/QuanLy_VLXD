@@ -1,5 +1,6 @@
 package com.example.quanly_vlxd.entity;
 
+import com.example.quanly_vlxd.enums.InvoiceStatusEnums;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
@@ -20,29 +21,30 @@ public class OutputInvoice {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "oi_id")
-    private int Id;
+    private int id;
 
     @Column(name = "oi_creation_time",nullable = false)
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone = "GMT+7")
-    private Date CreationTime;
+    private Date creationTime;
 
     @Column(name = "oi_update_time")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone = "GMT+7")
-    private Date UpdateTime;
+    private Date updateTime;
 
-    @Column(name = "oi_ship_address",nullable = false)
-    private String ShipAddress;
+    @Column(name = "oi_ship_address")
+    private String shipAddress;
 
     @Column(name = "oi_status")
-    private boolean Status;
+    @Enumerated(EnumType.STRING)
+    private InvoiceStatusEnums status;
 
     @Column(name = "oi_total_amount")
-    private double TotalAmount;
+    private double totalAmount;
 
     @Column(name = "isactive")
-    private boolean IsActive;
+    private boolean isActive;
 
-    @OneToMany(mappedBy = "outputInvoice", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "outputInvoice")
     @JsonIgnoreProperties(value = "outputInvoice")
     private Set<OutputInvoiceDetail> outputInvoiceDetails;
 

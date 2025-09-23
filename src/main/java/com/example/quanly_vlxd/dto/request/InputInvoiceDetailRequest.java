@@ -10,6 +10,8 @@ import lombok.*;
 @NoArgsConstructor
 public class InputInvoiceDetailRequest {
 
+    private int id;
+
     @NotBlank(message = "Product ID is required")
     private int proId;
 

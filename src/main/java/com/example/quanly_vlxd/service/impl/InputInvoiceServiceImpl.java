@@ -22,6 +22,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -35,7 +36,6 @@ public class InputInvoiceServiceImpl implements InputInvoiceService  {
     private final EmployeeRepo employeeRepo;
     private final UserRepo userRepo;
     private final WarehouseProductRepo warehouseProductRepo;
-    // Lấy ra giá nhập theo ID sp
     public double  getInputPriceByProductID(int proid, Date creationTime){
         for(ProductPriceHistory priceHistory: priceHistoryRepo.findAll()) {
             if (priceHistory.getProduct().getId() == proid
@@ -71,8 +71,8 @@ public class InputInvoiceServiceImpl implements InputInvoiceService  {
             inputInvoiceRepo.save(inputInvoice);
         }
     }
-    @Transactional
     @Override
+    @Transactional
     public ResponseEntity<MessageResponse> addInputInvoice(InputInvoiceRequest inputInvoiceRequest) {
         try {
             validateInputInvoiceRequest(inputInvoiceRequest);
@@ -124,9 +124,9 @@ public class InputInvoiceServiceImpl implements InputInvoiceService  {
 
     @Override
     @Transactional
-    public ResponseEntity<MessageResponse> ApproveInputInvoice(int inputInvoiceId) {
+    public ResponseEntity<MessageResponse> approveInputInvoice(int inputInvoiceId) {
         InputInvoice invoice = inputInvoiceRepo.findById(inputInvoiceId)
-                .orElseThrow(() -> new RuntimeException("Invoice not found"));
+                .orElseThrow(() -> new RuntimeException("Input invoice not found"));
 
         if (invoice.getStatus() != InvoiceStatusEnums.PENDING) {
             throw new RuntimeException("Only pending invoices can be approved");
@@ -150,7 +150,32 @@ public class InputInvoiceServiceImpl implements InputInvoiceService  {
         invoice.setStatus(InvoiceStatusEnums.APPROVED);
         inputInvoiceRepo.save(invoice);
 
-        return ResponseEntity.ok(MessageResponse.builder().message("Invoice approved successfully").build());
+        return ResponseEntity.ok(MessageResponse.builder().message("Input invoice approved successfully").build());
+    }
+    @Override
+    public ResponseEntity<MessageResponse> completeInputInvoice(int inputInvoiceId) {
+        InputInvoice invoice = inputInvoiceRepo.findById(inputInvoiceId)
+                .orElseThrow(() -> new RuntimeException("Input invoice not found"));
+
+        if (invoice.getStatus() != InvoiceStatusEnums.APPROVED) {
+            throw new RuntimeException("Only approved invoices can be approved");
+        }
+        invoice.setStatus(InvoiceStatusEnums.COMPLETED);
+        inputInvoiceRepo.save(invoice);
+        return ResponseEntity.ok(MessageResponse.builder().message("Input invoice with id: " + invoice.getId() + " completed").build());
+    }
+
+    @Override
+    public ResponseEntity<MessageResponse> rejectInputInvoice(int inputInvoiceId) {
+        InputInvoice invoice = inputInvoiceRepo.findById(inputInvoiceId)
+                .orElseThrow(() -> new RuntimeException("Input invoice not found"));
+
+        if (invoice.getStatus() != InvoiceStatusEnums.PENDING) {
+            throw new RuntimeException("Only pending invoices can be approved");
+        }
+        invoice.setStatus(InvoiceStatusEnums.REJECTED);
+        inputInvoiceRepo.save(invoice);
+        return ResponseEntity.ok(MessageResponse.builder().message("Input invoice rejected successfully").build());
     }
 
     private void validateInputInvoiceRequest(InputInvoiceRequest request) {
@@ -175,6 +200,7 @@ public class InputInvoiceServiceImpl implements InputInvoiceService  {
     }
 
     @Override
+    @Transactional
     public ResponseEntity<MessageResponse> updateInputInvoice(int id, InputInvoiceRequest inputInvoiceRequest) {
         try {
             validateInputInvoiceRequest(inputInvoiceRequest);
@@ -187,13 +213,49 @@ public class InputInvoiceServiceImpl implements InputInvoiceService  {
             InputInvoice inputInvoice = inputInvoiceOp.get();
             inputInvoice.setSupplier(supplier);
             inputInvoice.setEmployee(employee);
-            inputInvoice.setUpdateTime(inputInvoiceRequest.getCreationTime());
-            inputInvoiceRepo.save(inputInvoice);
+            inputInvoice.setUpdateTime(inputInvoiceRequest.getUpdateTime());
+            InputInvoice updatedInputInvoice = inputInvoiceRepo.save(inputInvoice);
+
+
+            Map<Integer, InputInvoiceDetail> existingDetails = inputInvoice.getInputInvoiceDetails()
+                    .stream()
+                    .collect(Collectors.toMap(InputInvoiceDetail::getId, d -> d));
+
+            double total=0.0;
+            for (InputInvoiceDetailRequest dReq : inputInvoiceRequest.getListInvoiceDetails()) {
+                if (dReq.getId() != 0) {
+                    InputInvoiceDetail detail = existingDetails.get(dReq.getId());
+                    if (detail != null) {
+                        detail.setQuantity(dReq.getQuantity());
+                        double price= getInputPriceByProductID(dReq.getProId(), inputInvoiceRequest.getCreationTime());
+                        detail.setUnitPrice(price);
+                        detail.setAmount(dReq.getQuantity() * price);
+                        inputInvoiceDetailRepo.save(detail);
+                        existingDetails.remove(dReq.getId());
+                        total+=price*dReq.getQuantity();
+                    }
+                } else {
+                    double price= getInputPriceByProductID(dReq.getProId(), inputInvoiceRequest.getCreationTime());
+                    InputInvoiceDetail newDetail = InputInvoiceDetail.builder()
+                        .inputInvoice(updatedInputInvoice)
+                        .product(productRepo.findById(dReq.getProId()).orElse(null))
+                        .quantity(dReq.getQuantity())
+                        .unitPrice(price)
+                        .amount(dReq.getQuantity() * price)
+                        .warehouse(wareHouseRepo.findById(dReq.getWhId()).orElse(null))
+                        .build();
+                    inputInvoiceDetailRepo.save(newDetail);
+                    total+=price*dReq.getQuantity();
+
+                }
+            }
+            inputInvoiceDetailRepo.deleteAll(existingDetails.values());
+            updatedInputInvoice.setTotalAmount(total);
+            inputInvoiceRepo.save(updatedInputInvoice);
             return ResponseEntity.ok(MessageResponse.builder().message("Update input invoice successfully").build());
         }catch (IllegalArgumentException ex) {
             return ResponseEntity.badRequest().body(MessageResponse.builder().message(ex.getMessage()).build());
         }
-
     }
 
     @Override

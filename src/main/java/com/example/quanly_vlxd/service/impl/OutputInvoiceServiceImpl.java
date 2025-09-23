@@ -1,18 +1,28 @@
 package com.example.quanly_vlxd.service.impl;
 
+import com.example.quanly_vlxd.dto.request.OutputFilterRequest;
 import com.example.quanly_vlxd.dto.request.OutputInvoiceDetailRequest;
 import com.example.quanly_vlxd.dto.request.OutputInvoiceRequest;
 import com.example.quanly_vlxd.dto.response.MessageResponse;
 import com.example.quanly_vlxd.dto.response.OutputInvoiceDetailResponse;
 import com.example.quanly_vlxd.dto.response.OutputInvoiceResponse;
 import com.example.quanly_vlxd.entity.*;
+import com.example.quanly_vlxd.enums.InvoiceStatusEnums;
 import com.example.quanly_vlxd.enums.InvoiceTypeEnums;
 import com.example.quanly_vlxd.repo.*;
 import com.example.quanly_vlxd.service.OutputInvoiceService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -25,6 +35,7 @@ public class OutputInvoiceServiceImpl implements OutputInvoiceService {
     private final ProductRepo productRepo;
     private final EmployeeRepo employeeRepo;
     private final PriceHistoryRepo priceHistoryRepo;
+    private final UserRepo userRepo;
     public double getOutputPriceByProductID(int proid, Date creationTime) {
         for(ProductPriceHistory p: priceHistoryRepo.findAll()) {
             if (p.getProduct().getId() == proid
@@ -36,151 +47,229 @@ public class OutputInvoiceServiceImpl implements OutputInvoiceService {
         }
         return 0;
     }
-    public void updateOI(){
-        for(Customer cus: customerRepo.findAll()){
-            for(OutputInvoice o: outputInvoiceRepo.findAll()){
-                if(o.getCustomer().getId()==cus.getId()){
-                    o.setShipAddress(cus.getAddress());
-                    outputInvoiceRepo.save(o);
-                }
+    private void validateOutputInvoiceRequest(OutputInvoiceRequest request) {
+        if (customerRepo.findById(request.getCusId()).isEmpty()) {
+            throw new IllegalArgumentException("Customer ID " + request.getCusId() + " is not exist");
+        }
+        if (employeeRepo.findById(request.getEmpId()).isEmpty()) {
+            throw new IllegalArgumentException("Employee ID " + request.getEmpId() + " is not exist");
+        }
+
+        for (OutputInvoiceDetailRequest detail : request.getListInvoiceDetails()) {
+            if (productRepo.findById(detail.getProId()).isEmpty()) {
+                throw new IllegalArgumentException("Product ID " + detail.getProId() + " is not exist");
+            }
+            if (wareHouseRepo.findById(detail.getWhId()).isEmpty()) {
+                throw new IllegalArgumentException("Warehouse ID " + detail.getWhId() + " is not exist");
+            }
+            if (detail.getQuantity() <= 0) {
+                throw new IllegalArgumentException("Quantity must be greater than 0 for product ID " + detail.getProId());
             }
         }
-        for(OutputInvoice o: outputInvoiceRepo.findAll()){
-            for(OutputInvoiceDetail oid : outputInvoiceDetailRepo.findAll()){
-                    if(oid.getOutputInvoice().getId()== o.getId()){
-                        oid.setUnitPrice(getOutputPriceByProductID(oid.getPro_Id(),o.getCreationTime()));
-                        outputInvoiceDetailRepo.save(oid);
-                    }
+    }
+
+    @Override
+    @Transactional
+    public ResponseEntity<MessageResponse> addOutputInvoice(OutputInvoiceRequest outputInvoiceRequest) {
+        try {
+            validateOutputInvoiceRequest(outputInvoiceRequest);
+            Customer customer = customerRepo.findById(outputInvoiceRequest.getCusId()).get();
+            Employee employee = employeeRepo.findById(outputInvoiceRequest.getEmpId()).get();
+
+            OutputInvoice outputInvoice = OutputInvoice.builder()
+                    .customer(customer)
+                    .employee(employee)
+                    .status(InvoiceStatusEnums.PENDING)
+                    .shipAddress(outputInvoiceRequest.getShipAddress())
+                    .creationTime(outputInvoiceRequest.getCreationTime())
+                    .updateTime(outputInvoiceRequest.getUpdateTime())
+                    .totalAmount(0)
+                    .isActive(true)
+                    .build();
+            OutputInvoice saveOutputInvoice = outputInvoiceRepo.save(outputInvoice);
+            List<OutputInvoiceDetail> details = new ArrayList<>();
+            double total = 0.0;
+            for (OutputInvoiceDetailRequest oid : outputInvoiceRequest.getListInvoiceDetails()) {
+                Warehouse warehouse = wareHouseRepo.findById(oid.getWhId()).get();
+
+                double quantity = oid.getQuantity();
+                double price = getOutputPriceByProductID(oid.getProId(), outputInvoice.getCreationTime());
+
+                OutputInvoiceDetail detail = OutputInvoiceDetail.builder()
+                        .outputInvoice(saveOutputInvoice)
+                        .proId(oid.getProId())
+                        .warehouse(warehouse)
+                        .quantity(quantity)
+                        .unitPrice(price)
+                        .amount(quantity * price)
+                        .build();
+                details.add(detail);
+                total += detail.getAmount();
             }
+            outputInvoiceDetailRepo.saveAll(details);
+
+            saveOutputInvoice.setTotalAmount(total);
+            outputInvoiceRepo.save(saveOutputInvoice);
+
+            return ResponseEntity.ok(MessageResponse.builder().message("Add output invoice successfully").build());
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.badRequest()
+                    .body(MessageResponse.builder().message(ex.getMessage()).build());
         }
-        for(OutputInvoiceDetail oid : outputInvoiceDetailRepo.findAll()){
-            oid.setAmount(oid.getQuantity()*oid.getUnitPrice());
-            outputInvoiceDetailRepo.save(oid);
+    }
+
+    @Override
+    public ResponseEntity<MessageResponse> approveOutputInvoice(int id) {
+        OutputInvoice invoice = outputInvoiceRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Invoice not found"));
+
+        if (invoice.getStatus() != InvoiceStatusEnums.PENDING) {
+            throw new RuntimeException("Only pending invoices can be approved");
         }
-        for(OutputInvoice o: outputInvoiceRepo.findAll()){
+
+        for (OutputInvoiceDetail detail : invoice.getOutputInvoiceDetails()) {
+            Warehouse warehouse = detail.getWarehouse();
+
+            Optional<WareHouse_Product> whProductOp = warehouseProductRepo
+                    .findByWarehouseAndProduct(warehouse.getId(), detail.getProId());
+            if(whProductOp.isEmpty()){
+                return ResponseEntity.badRequest().body(MessageResponse.builder().message("Warehouse product not found").build());
+            }
+            WareHouse_Product whProduct = whProductOp.get();
+            whProduct.setQuantity(whProduct.getQuantity() - detail.getQuantity());
+            whProduct.setLastUpdated(new Date());
+            warehouseProductRepo.save(whProduct);
+        }
+
+        invoice.setStatus(InvoiceStatusEnums.APPROVED);
+        outputInvoiceRepo.save(invoice);
+
+        return ResponseEntity.ok(MessageResponse.builder().message("Output invoice approved successfully").build());
+    }
+
+    @Override
+    public ResponseEntity<MessageResponse> CompleteOutputInvoice(int id) {
+        OutputInvoice invoice = outputInvoiceRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Invoice not found"));
+
+        if (invoice.getStatus() != InvoiceStatusEnums.APPROVED) {
+            throw new RuntimeException("Only pending invoices can be completed");
+        }
+        invoice.setStatus(InvoiceStatusEnums.COMPLETED);
+        outputInvoiceRepo.save(invoice);
+        return ResponseEntity.ok(MessageResponse.builder().message("Output invoice completed successfully").build());
+    }
+
+    @Override
+    public ResponseEntity<MessageResponse> rejectOutputInvoice(int id) {
+        OutputInvoice invoice = outputInvoiceRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Invoice not found"));
+
+        if (invoice.getStatus() != InvoiceStatusEnums.PENDING) {
+            throw new RuntimeException("Only pending invoices can be rejected");
+        }
+        invoice.setStatus(InvoiceStatusEnums.REJECTED);
+        outputInvoiceRepo.save(invoice);
+        return ResponseEntity.ok(MessageResponse.builder().message("Output invoice rejected successfully").build());
+    }
+
+    @Override
+    public ResponseEntity<MessageResponse> updateOutputInvoice(int id, OutputInvoiceRequest outputInvoiceRequest) {
+        try {
+            validateOutputInvoiceRequest(outputInvoiceRequest);
+            Customer customer = customerRepo.findById(outputInvoiceRequest.getCusId()).get();
+            Employee employee = employeeRepo.findById(outputInvoiceRequest.getEmpId()).get();
+            Optional<OutputInvoice> outputInvoiceOp = outputInvoiceRepo.findById(id);
+            if(outputInvoiceOp.isEmpty()){
+                return ResponseEntity.badRequest().body(MessageResponse.builder().message("Output invoice does not exist!!").build());
+            }
+            OutputInvoice outputInvoice = outputInvoiceOp.get();
+            outputInvoice.setCustomer(customer);
+            outputInvoice.setEmployee(employee);
+            outputInvoice.setShipAddress(outputInvoiceRequest.getShipAddress());
+            outputInvoice.setUpdateTime(outputInvoiceRequest.getUpdateTime());
+            OutputInvoice updatedInputInvoice = outputInvoiceRepo.save(outputInvoice);
+
+
+            Map<Integer, OutputInvoiceDetail> existingDetails = outputInvoice.getOutputInvoiceDetails()
+                    .stream()
+                    .collect(Collectors.toMap(OutputInvoiceDetail::getId, d -> d));
+
             double total=0.0;
-            for(OutputInvoiceDetail oid: outputInvoiceDetailRepo.findAll()){
-                if(oid.getOutputInvoice().getId()==o.getId()){
-                    total+=oid.getAmount();
-                }
-            }
-            o.setTotalAmount(total);
-            outputInvoiceRepo.save(o);
-        }
-    }
-
-    public OutputInvoiceDetail createOutputInvoiceDetail(OutputInvoiceDetailRequest outputInvoiceDetailRequest,double quantity, double price, OutputInvoice savedOutputInvoice,Warehouse warehouse) {
-        return OutputInvoiceDetail.builder()
-                .outputInvoice(savedOutputInvoice)
-                .warehouse(warehouse)
-                .Pro_Id(outputInvoiceDetailRequest.getPro_id())
-                .unitPrice(price)
-                .quantity(quantity)
-                .Amount(price*quantity)
-                .build();
-    }
-    public static OutputInvoice createOutputInvoice(OutputInvoiceRequest outputInvoiceRequest, Customer customer, Employee employee) {
-        return OutputInvoice.builder()
-                .customer(customer)
-                .employee(employee)
-                .CreationTime(outputInvoiceRequest.getCreationTime())
-                .UpdateTime(outputInvoiceRequest.getCreationTime())
-                .ShipAddress(outputInvoiceRequest.getShipAddress())
-                .TotalAmount(0)
-                .Status(false)
-                .IsActive(true)
-                .build();
-
-    }
-    @Override
-    public MessageResponse addOutputInvoice(OutputInvoiceRequest outputInvoiceRequest) {
-        Optional<Customer> customer = customerRepo.findById(outputInvoiceRequest.getCusID());
-        if (customer.isEmpty())
-            return MessageResponse.builder().message("Customer ID: " + outputInvoiceRequest.getCusID() + " is not exist").build();
-        Optional<Employee> employee = employeeRepo.findById(outputInvoiceRequest.getEmpID());
-        if(employee.isEmpty())
-            return MessageResponse.builder().message("Employee ID: " + outputInvoiceRequest.getEmpID() + " is not exist").build();
-        //Lưu thông tin hoá đơn
-        OutputInvoice outputInvoice = createOutputInvoice(outputInvoiceRequest, customer.get(), employee.get());
-        OutputInvoice savedOutputInvoice = outputInvoiceRepo.save(outputInvoice);
-        // Lưu các chi tiết hoá đơn
-        List<OutputInvoiceDetail> outputInvoiceDetailList = new ArrayList<>();
-        for(OutputInvoiceDetailRequest outputInvoiceDetailRequest: outputInvoiceRequest.getListOutputDetails()) {
-            Optional<Product> product = productRepo.findById(outputInvoiceDetailRequest.getPro_id());
-            if(product.isEmpty())
-                return MessageResponse.builder().message("Product ID: " + outputInvoiceDetailRequest.getPro_id() + " is not exist").build();
-            Optional<Warehouse> warehouse = wareHouseRepo.findById(outputInvoiceDetailRequest.getWh_id());
-            if(warehouse.isEmpty())
-                return MessageResponse.builder().message("Warehouse ID: " + outputInvoiceDetailRequest.getWh_id() + " is not exist").build();
-
-            double quantity= outputInvoiceDetailRequest.getQuantity();
-            double price = getOutputPriceByProductID(outputInvoiceDetailRequest.getPro_id(), outputInvoiceRequest.getCreationTime());
-            OutputInvoiceDetail outputInvoiceDetail = createOutputInvoiceDetail(outputInvoiceDetailRequest, quantity, price, savedOutputInvoice, warehouse.get());
-
-            outputInvoiceDetailList.add(outputInvoiceDetail);
-            // Update số lượng tồn kho
-            Optional<WareHouse_Product> wareHouseProduct = warehouseProductRepo.findByWarehouseAndProduct(outputInvoiceDetailRequest.getWh_id(), outputInvoiceDetailRequest.getPro_id());
-            if(wareHouseProduct.isEmpty())
-                return MessageResponse.builder().message(product.get().getName() + " is not exist in warehouse : " + warehouse.get().getName()).build();
-            else {
-                if(wareHouseProduct.get().getQuantity() < quantity){
-                    outputInvoiceRepo.delete(savedOutputInvoice);
-                    return MessageResponse.builder()
-                            .message("Product " + outputInvoiceDetailRequest.getPro_id() + ". Current quantity in warehouse: "+wareHouseProduct.get().getQuantity()+  " " +product.get().getUnitMeasure())
+            for (OutputInvoiceDetailRequest dReq : outputInvoiceRequest.getListInvoiceDetails()) {
+                if (dReq.getId() != 0) {
+                    OutputInvoiceDetail detail = existingDetails.get(dReq.getId());
+                    if (detail != null) {
+                        detail.setQuantity(dReq.getQuantity());
+                        double price= getOutputPriceByProductID(dReq.getProId(), outputInvoiceRequest.getCreationTime());
+                        detail.setUnitPrice(price);
+                        detail.setAmount(dReq.getQuantity() * price);
+                        outputInvoiceDetailRepo.save(detail);
+                        existingDetails.remove(dReq.getId());
+                        total+=price*dReq.getQuantity();
+                    }
+                } else {
+                    double price= getOutputPriceByProductID(dReq.getProId(), outputInvoiceRequest.getCreationTime());
+                    OutputInvoiceDetail newDetail = OutputInvoiceDetail.builder()
+                            .outputInvoice(updatedInputInvoice)
+                            .proId(dReq.getProId())
+                            .quantity(dReq.getQuantity())
+                            .unitPrice(price)
+                            .amount(dReq.getQuantity() * price)
+                            .warehouse(wareHouseRepo.findById(dReq.getWhId()).orElse(null))
                             .build();
+                    outputInvoiceDetailRepo.save(newDetail);
+                    total+=price*dReq.getQuantity();
+
                 }
-                wareHouseProduct.get().setQuantity(wareHouseProduct.get().getQuantity() - quantity);
-                wareHouseProduct.get().setLastUpdated(new Date());
-                warehouseProductRepo.save(wareHouseProduct.get());
             }
+            outputInvoiceDetailRepo.deleteAll(existingDetails.values());
+            updatedInputInvoice.setTotalAmount(total);
+            outputInvoiceRepo.save(updatedInputInvoice);
+            return ResponseEntity.ok(MessageResponse.builder().message("Update output invoice successfully").build());
+        }catch (IllegalArgumentException ex) {
+            return ResponseEntity.badRequest().body(MessageResponse.builder().message(ex.getMessage()).build());
         }
-        outputInvoiceDetailRepo.saveAll(outputInvoiceDetailList);
-        // Cập nhật tổng tiền
-        double total=0.0;
-        for(OutputInvoiceDetail oid: outputInvoiceDetailList){
-            total += oid.getAmount();
-        }
-        savedOutputInvoice.setTotalAmount(total);
-        outputInvoiceRepo.save(savedOutputInvoice);
-        return MessageResponse.builder().message("Add output invoice successfully").build();
     }
 
     @Override
-    public MessageResponse updateOutputInvoice(int id) {
+    public ResponseEntity<MessageResponse> deleteOutputInvoice(int id) {
         Optional<OutputInvoice> outputInvoice = outputInvoiceRepo.findById(id);
-        if(outputInvoice.isEmpty())
-            return MessageResponse.builder().message("Output invoice ID: " + id + " is not exist").build();
-        outputInvoice.get().setUpdateTime(new Date());
-        outputInvoice.get().setStatus(true);
-        outputInvoiceRepo.save(outputInvoice.get());
-        return MessageResponse.builder().message("the output invoice has been completed").build();
-    }
-
-    @Override
-    public MessageResponse deleteOutputInvoice(int id) {
-        Optional<OutputInvoice> outputInvoice = outputInvoiceRepo.findById(id);
-        if(outputInvoice.isEmpty())
-            return MessageResponse.builder().message("Output invoice ID: " + id + " is not exist").build();
-        for(OutputInvoiceDetail oid: outputInvoiceDetailRepo.findAll()){
-            Optional<WareHouse_Product> warehouseProduct = warehouseProductRepo.findByWarehouseAndProduct(oid.getWarehouse().getId(), oid.getPro_Id());
-            if (warehouseProduct.isPresent()) {
-                warehouseProduct.get().setQuantity(warehouseProduct.get().getQuantity() + oid.getQuantity());
-                warehouseProduct.get().setLastUpdated(new Date());
-                warehouseProductRepo.save(warehouseProduct.get());
-            }
-            outputInvoiceDetailRepo.delete(oid);
+        if(outputInvoice.isEmpty()){
+            return ResponseEntity.badRequest().body(MessageResponse.builder().message("Output invoice ID: " + id + " is not exist").build());
         }
-        outputInvoice.get().setIsActive(false);
+        outputInvoice.get().setActive(false);
         outputInvoiceRepo.save(outputInvoice.get());
-        return MessageResponse.builder().message("Delete output invoice successfully").build();
+        return ResponseEntity.ok(MessageResponse.builder().message("Delete output invoice successfully").build());
     }
 
     @Override
-    public OutputInvoiceResponse findOutputInvoice(int id) {
-        Optional<OutputInvoice> outputInvoice = outputInvoiceRepo.findByOutputInvoiceId(id);
-        return outputInvoice.map(this::convertOutputInvoiceToOutputInvoiceResponse).orElse(null);
+    public Page<OutputInvoiceResponse> getAllOutputInvoiceByEmp(OutputFilterRequest outputFilterRequest, String username) {
+        Optional<User> user = userRepo.findByUserName(username);
+        if (user.isEmpty()) {
+            throw new RuntimeException("User not found");
+        }
+        Employee employee = employeeRepo.findByUserID(user.get().getId());
+        if (employee == null) {
+            throw new RuntimeException("Employee not found");
+        }
+        Sort sort = Sort.by(Sort.Order.desc("creationTime"));
+        Pageable pageable = PageRequest.of(outputFilterRequest.getPageFilter(), outputFilterRequest.getSizeFilter(), sort);
+        Specification<OutputInvoice> spec = Specification.where(null);
+
+        spec = spec.and((root, query, cb) -> cb.equal(root.get("employee").get("id"), employee.getId()));
+
+        if (outputFilterRequest.getCusNameFilter() != null && !outputFilterRequest.getCusNameFilter().isEmpty()) {
+            spec = spec.and((root, query, cb) ->
+                    cb.like(cb.lower(root.get("customer").get("name")), "%" + outputFilterRequest.getCusNameFilter().toLowerCase() + "%"));
+        }
+        if (outputFilterRequest.getStatusFilter() != null) {
+            spec = spec.and((root, query, cb) ->
+                    cb.equal(root.get("status"), outputFilterRequest.getStatusFilter()));
+        }
+        return outputInvoiceRepo.findAll(spec,pageable).map(this::convertToOutputInvoiceResponse);
     }
-    public OutputInvoiceResponse convertOutputInvoiceToOutputInvoiceResponse(OutputInvoice outputInvoice){
+    private OutputInvoiceResponse convertToOutputInvoiceResponse(OutputInvoice outputInvoice){
         return OutputInvoiceResponse.builder()
                 .id(outputInvoice.getId())
                 .cusName(outputInvoice.getCustomer().getName())
@@ -188,13 +277,13 @@ public class OutputInvoiceServiceImpl implements OutputInvoiceService {
                 .creationTime(outputInvoice.getCreationTime())
                 .updateTime(outputInvoice.getUpdateTime())
                 .shipAddress(outputInvoice.getShipAddress())
-                .status(outputInvoice.isStatus())
+                .status(outputInvoice.getStatus().name())
                 .listOutputInvoiceDetails(convertToSetOutputInvoiceDetailResponse(outputInvoice.getOutputInvoiceDetails()))
                 .totalAmount(outputInvoice.getTotalAmount())
                 .build();
     }
-    public OutputInvoiceDetailResponse convertOutputInvoiceDetailToOutputInvoiceDetailResponse(OutputInvoiceDetail outputInvoiceDetail){
-        Optional<Product> product  = productRepo.findById(outputInvoiceDetail.getPro_Id());
+    public OutputInvoiceDetailResponse convertToOutputInvoiceDetailResponse(OutputInvoiceDetail outputInvoiceDetail){
+        Optional<Product> product  = productRepo.findById(outputInvoiceDetail.getProId());
         return product.map(value -> OutputInvoiceDetailResponse.builder()
                 .id(outputInvoiceDetail.getId())
                 .productName(value.getName())
@@ -209,7 +298,7 @@ public class OutputInvoiceServiceImpl implements OutputInvoiceService {
     public Set<OutputInvoiceDetailResponse> convertToSetOutputInvoiceDetailResponse(Set<OutputInvoiceDetail> outputInvoiceDetails){
         Set<OutputInvoiceDetailResponse> outputInvoiceDetailResponses = new HashSet<>();
         for(OutputInvoiceDetail outputInvoiceDetail: outputInvoiceDetails){
-            outputInvoiceDetailResponses.add(convertOutputInvoiceDetailToOutputInvoiceDetailResponse(outputInvoiceDetail));
+            outputInvoiceDetailResponses.add(convertToOutputInvoiceDetailResponse(outputInvoiceDetail));
         }
         return outputInvoiceDetailResponses;
     }

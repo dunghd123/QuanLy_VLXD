@@ -130,7 +130,7 @@ public class EmployeeServiceImpl implements EmployeeService {
                 inputInvoiceRepo.save(inputInvoice);
             }
             for(OutputInvoice outputInvoice: outputInvoices){
-                outputInvoice.setIsActive(false);
+                outputInvoice.setActive(false);
                 outputInvoiceRepo.save(outputInvoice);
             }
             employee.setActive(false);

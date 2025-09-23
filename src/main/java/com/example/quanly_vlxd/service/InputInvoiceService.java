@@ -10,7 +10,9 @@ import org.springframework.http.ResponseEntity;
 public interface InputInvoiceService {
 
     ResponseEntity<MessageResponse> addInputInvoice(InputInvoiceRequest inputInvoiceRequest);
-    ResponseEntity<MessageResponse> ApproveInputInvoice(int inputInvoiceId);
+    ResponseEntity<MessageResponse> approveInputInvoice(int inputInvoiceId);
+    ResponseEntity<MessageResponse> completeInputInvoice(int inputInvoiceId);
+    ResponseEntity<MessageResponse> rejectInputInvoice(int inputInvoiceId);
     ResponseEntity<MessageResponse> updateInputInvoice(int id, InputInvoiceRequest inputInvoiceRequest);
     ResponseEntity<MessageResponse> deleteInputInvoice(int id);
     InputInvoiceResponse getInputInvoice(int id);
