@@ -24,6 +24,8 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.example.quanly_vlxd.help.InvoiceHelper.generateCode;
+
 @Service
 @RequiredArgsConstructor
 public class InputInvoiceServiceImpl implements InputInvoiceService  {
@@ -82,6 +84,7 @@ public class InputInvoiceServiceImpl implements InputInvoiceService  {
             InputInvoice inputInvoice = InputInvoice.builder()
                     .supplier(supplier)
                     .employee(employee)
+                    .code(generateCode(InvoiceTypeEnums.INPUT))
                     .status(InvoiceStatusEnums.PENDING)
                     .creationTime(inputInvoiceRequest.getCreationTime())
                     .updateTime(inputInvoiceRequest.getUpdateTime())
@@ -308,6 +311,7 @@ public class InputInvoiceServiceImpl implements InputInvoiceService  {
                 .id(inputInvoice.getId())
                 .supName(inputInvoice.getSupplier().getName())
                 .empName(inputInvoice.getEmployee().getName())
+                .code(inputInvoice.getCode())
                 .creationTime(inputInvoice.getCreationTime())
                 .updateTime(inputInvoice.getUpdateTime())
                 .status(inputInvoice.getStatus().name())

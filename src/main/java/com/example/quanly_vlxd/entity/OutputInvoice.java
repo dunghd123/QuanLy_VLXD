@@ -4,8 +4,8 @@ import com.example.quanly_vlxd.enums.InvoiceStatusEnums;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Size;
 import lombok.*;
-
 
 import java.util.Date;
 import java.util.Set;
@@ -22,6 +22,10 @@ public class OutputInvoice {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "oi_id")
     private int id;
+
+    @Column(name= " oi_code")
+    @Size(max = 10)
+    private String code;
 
     @Column(name = "oi_creation_time",nullable = false)
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone = "GMT+7")

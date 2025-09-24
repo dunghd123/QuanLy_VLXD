@@ -15,6 +15,7 @@ public class InputInvoiceResponse {
     private int id;
     private String supName;
     private String empName;
+    private String code;
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+7")
     private Date creationTime;
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+7")

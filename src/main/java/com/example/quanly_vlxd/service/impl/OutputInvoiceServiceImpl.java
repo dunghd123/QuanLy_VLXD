@@ -24,6 +24,8 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.example.quanly_vlxd.help.InvoiceHelper.generateCode;
+
 @Service
 @RequiredArgsConstructor
 public class OutputInvoiceServiceImpl implements OutputInvoiceService {
@@ -79,6 +81,7 @@ public class OutputInvoiceServiceImpl implements OutputInvoiceService {
             OutputInvoice outputInvoice = OutputInvoice.builder()
                     .customer(customer)
                     .employee(employee)
+                    .code(generateCode(InvoiceTypeEnums.OUTPUT))
                     .status(InvoiceStatusEnums.PENDING)
                     .shipAddress(outputInvoiceRequest.getShipAddress())
                     .creationTime(outputInvoiceRequest.getCreationTime())
@@ -272,6 +275,7 @@ public class OutputInvoiceServiceImpl implements OutputInvoiceService {
     private OutputInvoiceResponse convertToOutputInvoiceResponse(OutputInvoice outputInvoice){
         return OutputInvoiceResponse.builder()
                 .id(outputInvoice.getId())
+                .code(outputInvoice.getCode())
                 .cusName(outputInvoice.getCustomer().getName())
                 .empName(outputInvoice.getEmployee().getName())
                 .creationTime(outputInvoice.getCreationTime())
