@@ -64,6 +64,25 @@ public class InputInvoiceController {
         filter.setStatusFilter(status != null ? Enum.valueOf(InvoiceStatusEnums.class, status.toUpperCase()) : null);
         return ResponseEntity.ok(inputInvoiceService.getAllInputInvoiceByEmp(filter, username));
     }
+    @GetMapping("getAllPendingInputInvoiceByEmp/{username}")
+    public ResponseEntity<Page<InputInvoiceResponse>> getAllPendingInputInvoiceByEmp(
+            @PathVariable(value = "username") String username,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size){
+        return ResponseEntity.ok(inputInvoiceService.getAllPendingInputInvoiceByEmp(page, size, username));
+    }
+    @PutMapping("approve-input-invoice/{id}")
+    public ResponseEntity<MessageResponse> approveInputInvoice(@PathVariable(value = "id") int id){
+        return inputInvoiceService.approveInputInvoice(id);
+    }
+    @PutMapping("reject-input-invoice/{id}")
+    public ResponseEntity<MessageResponse> rejectInputInvoice(@PathVariable(value = "id") int id){
+        return inputInvoiceService.rejectInputInvoice(id);
+    }
+    @PutMapping("complete-input-invoice/{id}")
+    public ResponseEntity<MessageResponse> completeInputInvoice(@PathVariable(value = "id") int id){
+        return inputInvoiceService.completeInputInvoice(id);
+    }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST) // Trả về mã 400 BAD_REQUEST
     @ExceptionHandler(MethodArgumentNotValidException.class) // Xử lý ngoại lệ MethodArgumentNotValidException

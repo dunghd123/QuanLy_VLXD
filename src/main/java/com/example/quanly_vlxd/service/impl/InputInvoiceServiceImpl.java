@@ -276,9 +276,7 @@ public class InputInvoiceServiceImpl implements InputInvoiceService  {
         Optional<InputInvoice> inputInvoice = inputInvoiceRepo.findByInputID(id);
         return inputInvoice.map(this::convertToInputInvoiceResponse).orElse(null);
     }
-
-    @Override
-    public Page<InputInvoiceResponse> getAllInputInvoiceByEmp(InputFilterRequest inputFilterRequest, String username) {
+    private Employee getEmployeeByUsername(String username) {
         Optional<User> user = userRepo.findByUserName(username);
         if (user.isEmpty()) {
             throw new RuntimeException("User not found");
@@ -287,6 +285,12 @@ public class InputInvoiceServiceImpl implements InputInvoiceService  {
         if (employee == null) {
             throw new RuntimeException("Employee not found");
         }
+        return employee;
+    }
+
+    @Override
+    public Page<InputInvoiceResponse> getAllInputInvoiceByEmp(InputFilterRequest inputFilterRequest, String username) {
+        Employee employee =  getEmployeeByUsername(username);
         Sort sort = Sort.by(Sort.Order.desc("creationTime"));
         Pageable pageable = PageRequest.of(inputFilterRequest.getPageFilter(), inputFilterRequest.getSizeFilter(), sort);
         Specification<InputInvoice> spec = Specification.where(null);
@@ -304,6 +308,17 @@ public class InputInvoiceServiceImpl implements InputInvoiceService  {
 
         return inputInvoiceRepo.findAll(spec, pageable)
                 .map(this::convertToInputInvoiceResponse);
+    }
+
+    @Override
+    public Page<InputInvoiceResponse> getAllPendingInputInvoiceByEmp(int page, int size, String username) {
+        Employee employee =  getEmployeeByUsername(username);
+        Sort sort = Sort.by(Sort.Order.desc("creationTime"));
+        Pageable pageable = PageRequest.of(page, size, sort);
+        Specification<InputInvoice> spec = Specification.where(null);
+        spec = spec.and((root, query, cb) -> cb.equal(root.get("employee").get("id"), employee.getId()));
+        spec = spec.and((root, query, cb) -> cb.equal(root.get("status"), InvoiceStatusEnums.PENDING));
+        return inputInvoiceRepo.findAll(spec, pageable).map(this::convertToInputInvoiceResponse);
     }
 
     private InputInvoiceResponse convertToInputInvoiceResponse(InputInvoice inputInvoice){
@@ -330,7 +345,6 @@ public class InputInvoiceServiceImpl implements InputInvoiceService  {
                 .amount(inputInvoiceDetail.getAmount())
                 .build();
     }
-    // convert Set<InputInvoiceDetail> -> Set<InputInvoiceDetailResponse>
     private Set<InputInvoiceDetailResponse> convertToSetInputInvoiceDetailResponse(Set<InputInvoiceDetail> inputInvoiceDetails){
         Set<InputInvoiceDetailResponse> lst= new HashSet<>();
         for(InputInvoiceDetail inputInvoiceDetail: inputInvoiceDetails){

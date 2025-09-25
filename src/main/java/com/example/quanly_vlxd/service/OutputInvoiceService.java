@@ -10,10 +10,11 @@ import org.springframework.http.ResponseEntity;
 public interface OutputInvoiceService {
     ResponseEntity<MessageResponse> addOutputInvoice(OutputInvoiceRequest outputInvoiceRequest);
     ResponseEntity<MessageResponse> approveOutputInvoice(int id);
-    ResponseEntity<MessageResponse> CompleteOutputInvoice(int id);
+    ResponseEntity<MessageResponse> completeOutputInvoice(int id);
     ResponseEntity<MessageResponse> rejectOutputInvoice(int id);
     ResponseEntity<MessageResponse> updateOutputInvoice(int id, OutputInvoiceRequest outputInvoiceRequest);
     ResponseEntity<MessageResponse> deleteOutputInvoice(int id);
     Page<OutputInvoiceResponse> getAllOutputInvoiceByEmp(OutputFilterRequest outputFilterRequest, String username);
+    Page<OutputInvoiceResponse> getAllPendingOutputInvoiceByEmp(int page, int size, String username);
 
 }

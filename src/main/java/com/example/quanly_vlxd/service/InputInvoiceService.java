@@ -17,4 +17,5 @@ public interface InputInvoiceService {
     ResponseEntity<MessageResponse> deleteInputInvoice(int id);
     InputInvoiceResponse getInputInvoice(int id);
     Page<InputInvoiceResponse> getAllInputInvoiceByEmp(InputFilterRequest inputFilter, String username);
+    Page<InputInvoiceResponse> getAllPendingInputInvoiceByEmp(int page, int size, String username);
 }

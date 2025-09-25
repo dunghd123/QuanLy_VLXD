@@ -54,6 +54,27 @@ public class OutputInvoiceController {
         filter.setStatusFilter(status != null ? Enum.valueOf(InvoiceStatusEnums.class, status.toUpperCase()) : null);
         return ResponseEntity.ok(outputInvoiceService.getAllOutputInvoiceByEmp(filter,username));
     }
+
+    @GetMapping("getAllPendingOutputInvoiceByEmp/{username}")
+    public ResponseEntity<Page<OutputInvoiceResponse>> getAllPendingOutputInvoiceByEmp(
+            @PathVariable(value = "username") String username,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size){
+        return ResponseEntity.ok(outputInvoiceService.getAllPendingOutputInvoiceByEmp(page, size, username));
+    }
+    @PutMapping("approve-output-invoice/{id}")
+    public ResponseEntity<MessageResponse> approveOutputInvoice(@PathVariable(value = "id") int id){
+        return outputInvoiceService.approveOutputInvoice(id);
+    }
+    @PutMapping("reject-output-invoice/{id}")
+    public ResponseEntity<MessageResponse> rejectOutputInvoice(@PathVariable(value = "id") int id){
+        return outputInvoiceService.rejectOutputInvoice(id);
+    }
+    @PutMapping("complete-output-invoice/{id}")
+    public ResponseEntity<MessageResponse> completeOutputInvoice(@PathVariable(value = "id") int id){
+        return outputInvoiceService.completeOutputInvoice(id);
+    }
+
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public Map<String, String> handleValidationExceptions(MethodArgumentNotValidException ex) {

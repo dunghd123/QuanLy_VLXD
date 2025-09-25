@@ -23,7 +23,7 @@ public class InputInvoice {
     @Column(name = "inp_id")
     private int id;
 
-    @Column(name= " inp_code")
+    @Column(name= " inp_code", unique = true)
     @Size(max = 10)
     private String code;
 

@@ -120,16 +120,19 @@ public class OutputInvoiceServiceImpl implements OutputInvoiceService {
                     .body(MessageResponse.builder().message(ex.getMessage()).build());
         }
     }
-
-    @Override
-    public ResponseEntity<MessageResponse> approveOutputInvoice(int id) {
+    private OutputInvoice getOutputInvoice(int id) {
         OutputInvoice invoice = outputInvoiceRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Invoice not found"));
 
         if (invoice.getStatus() != InvoiceStatusEnums.PENDING) {
             throw new RuntimeException("Only pending invoices can be approved");
         }
+        return invoice;
+    }
 
+    @Override
+    public ResponseEntity<MessageResponse> approveOutputInvoice(int id) {
+        OutputInvoice invoice = getOutputInvoice(id);
         for (OutputInvoiceDetail detail : invoice.getOutputInvoiceDetails()) {
             Warehouse warehouse = detail.getWarehouse();
 
@@ -151,13 +154,8 @@ public class OutputInvoiceServiceImpl implements OutputInvoiceService {
     }
 
     @Override
-    public ResponseEntity<MessageResponse> CompleteOutputInvoice(int id) {
-        OutputInvoice invoice = outputInvoiceRepo.findById(id)
-                .orElseThrow(() -> new RuntimeException("Invoice not found"));
-
-        if (invoice.getStatus() != InvoiceStatusEnums.APPROVED) {
-            throw new RuntimeException("Only pending invoices can be completed");
-        }
+    public ResponseEntity<MessageResponse> completeOutputInvoice(int id) {
+        OutputInvoice invoice = getOutputInvoice(id);
         invoice.setStatus(InvoiceStatusEnums.COMPLETED);
         outputInvoiceRepo.save(invoice);
         return ResponseEntity.ok(MessageResponse.builder().message("Output invoice completed successfully").build());
@@ -165,12 +163,7 @@ public class OutputInvoiceServiceImpl implements OutputInvoiceService {
 
     @Override
     public ResponseEntity<MessageResponse> rejectOutputInvoice(int id) {
-        OutputInvoice invoice = outputInvoiceRepo.findById(id)
-                .orElseThrow(() -> new RuntimeException("Invoice not found"));
-
-        if (invoice.getStatus() != InvoiceStatusEnums.PENDING) {
-            throw new RuntimeException("Only pending invoices can be rejected");
-        }
+        OutputInvoice invoice = getOutputInvoice(id);
         invoice.setStatus(InvoiceStatusEnums.REJECTED);
         outputInvoiceRepo.save(invoice);
         return ResponseEntity.ok(MessageResponse.builder().message("Output invoice rejected successfully").build());
@@ -246,8 +239,7 @@ public class OutputInvoiceServiceImpl implements OutputInvoiceService {
         return ResponseEntity.ok(MessageResponse.builder().message("Delete output invoice successfully").build());
     }
 
-    @Override
-    public Page<OutputInvoiceResponse> getAllOutputInvoiceByEmp(OutputFilterRequest outputFilterRequest, String username) {
+    private Employee getEmployeeByUsername(String username) {
         Optional<User> user = userRepo.findByUserName(username);
         if (user.isEmpty()) {
             throw new RuntimeException("User not found");
@@ -256,6 +248,11 @@ public class OutputInvoiceServiceImpl implements OutputInvoiceService {
         if (employee == null) {
             throw new RuntimeException("Employee not found");
         }
+        return employee;
+    }
+    @Override
+    public Page<OutputInvoiceResponse> getAllOutputInvoiceByEmp(OutputFilterRequest outputFilterRequest, String username) {
+        Employee employee =  getEmployeeByUsername(username);
         Sort sort = Sort.by(Sort.Order.desc("creationTime"));
         Pageable pageable = PageRequest.of(outputFilterRequest.getPageFilter(), outputFilterRequest.getSizeFilter(), sort);
         Specification<OutputInvoice> spec = Specification.where(null);
@@ -272,6 +269,18 @@ public class OutputInvoiceServiceImpl implements OutputInvoiceService {
         }
         return outputInvoiceRepo.findAll(spec,pageable).map(this::convertToOutputInvoiceResponse);
     }
+
+    @Override
+    public Page<OutputInvoiceResponse> getAllPendingOutputInvoiceByEmp(int page, int size, String username) {
+        Employee employee =  getEmployeeByUsername(username);
+        Sort sort = Sort.by(Sort.Order.desc("creationTime"));
+        Pageable pageable = PageRequest.of(page, size, sort);
+        Specification<OutputInvoice> spec = Specification.where(null);
+        spec = spec.and((root, query, cb) -> cb.equal(root.get("employee").get("id"), employee.getId()));
+        spec = spec.and((root, query, cb) -> cb.equal(root.get("status"), InvoiceStatusEnums.PENDING));
+        return outputInvoiceRepo.findAll(spec, pageable).map(this::convertToOutputInvoiceResponse);
+    }
+
     private OutputInvoiceResponse convertToOutputInvoiceResponse(OutputInvoice outputInvoice){
         return OutputInvoiceResponse.builder()
                 .id(outputInvoice.getId())

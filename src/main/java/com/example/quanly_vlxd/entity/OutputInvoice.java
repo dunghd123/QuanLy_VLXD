@@ -23,7 +23,7 @@ public class OutputInvoice {
     @Column(name = "oi_id")
     private int id;
 
-    @Column(name= " oi_code")
+    @Column(name= " oi_code", unique = true)
     @Size(max = 10)
     private String code;
 
