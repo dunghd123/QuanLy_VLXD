@@ -271,12 +271,11 @@ public class OutputInvoiceServiceImpl implements OutputInvoiceService {
     }
 
     @Override
-    public Page<OutputInvoiceResponse> getAllPendingOutputInvoiceByEmp(int page, int size, String username) {
-        Employee employee =  getEmployeeByUsername(username);
+    public Page<OutputInvoiceResponse> getAllPendingOutputInvoiceByEmp(int page, int size) {
         Sort sort = Sort.by(Sort.Order.desc("creationTime"));
         Pageable pageable = PageRequest.of(page, size, sort);
         Specification<OutputInvoice> spec = Specification.where(null);
-        spec = spec.and((root, query, cb) -> cb.equal(root.get("employee").get("id"), employee.getId()));
+        spec = spec.and((root, query, cb) -> cb.equal(root.get("isActive"),true));
         spec = spec.and((root, query, cb) -> cb.equal(root.get("status"), InvoiceStatusEnums.PENDING));
         return outputInvoiceRepo.findAll(spec, pageable).map(this::convertToOutputInvoiceResponse);
     }

@@ -64,12 +64,11 @@ public class InputInvoiceController {
         filter.setStatusFilter(status != null ? Enum.valueOf(InvoiceStatusEnums.class, status.toUpperCase()) : null);
         return ResponseEntity.ok(inputInvoiceService.getAllInputInvoiceByEmp(filter, username));
     }
-    @GetMapping("getAllPendingInputInvoiceByEmp/{username}")
+    @GetMapping("getAllPendingInputInvoiceByEmp")
     public ResponseEntity<Page<InputInvoiceResponse>> getAllPendingInputInvoiceByEmp(
-            @PathVariable(value = "username") String username,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size){
-        return ResponseEntity.ok(inputInvoiceService.getAllPendingInputInvoiceByEmp(page, size, username));
+        return ResponseEntity.ok(inputInvoiceService.getAllPendingInputInvoiceByEmp(page, size));
     }
     @PutMapping("approve-input-invoice/{id}")
     public ResponseEntity<MessageResponse> approveInputInvoice(@PathVariable(value = "id") int id){
