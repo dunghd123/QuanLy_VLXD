@@ -191,38 +191,56 @@ public class OutputInvoiceServiceImpl implements OutputInvoiceService {
                     .stream()
                     .collect(Collectors.toMap(OutputInvoiceDetail::getId, d -> d));
 
-            double total=0.0;
+            // Gom whId để batch fetch
+            Set<Integer> whIds = outputInvoiceRequest.getListInvoiceDetails().stream()
+                    .map(OutputInvoiceDetailRequest::getWhId)
+                    .collect(Collectors.toSet());
+            Map<Integer, Warehouse> warehouseMap = wareHouseRepo.findAllById(whIds).stream()
+                    .collect(Collectors.toMap(Warehouse::getId, w -> w));
+
+            List<OutputInvoiceDetail> toSave = new ArrayList<>();
+            double total = 0.0;
+
             for (OutputInvoiceDetailRequest dReq : outputInvoiceRequest.getListInvoiceDetails()) {
-                if (dReq.getId() != 0) {
+                double price = getOutputPriceByProductID(dReq.getProId(), outputInvoiceRequest.getCreationTime());
+                double amount = dReq.getQuantity() * price;
+
+                if (dReq.getId() != 0 && existingDetails.containsKey(dReq.getId())) {
                     OutputInvoiceDetail detail = existingDetails.get(dReq.getId());
-                    if (detail != null) {
-                        detail.setQuantity(dReq.getQuantity());
-                        double price= getOutputPriceByProductID(dReq.getProId(), outputInvoiceRequest.getCreationTime());
-                        detail.setUnitPrice(price);
-                        detail.setAmount(dReq.getQuantity() * price);
-                        outputInvoiceDetailRepo.save(detail);
-                        existingDetails.remove(dReq.getId());
-                        total+=price*dReq.getQuantity();
-                    }
+                    detail.setQuantity(dReq.getQuantity());
+                    detail.setUnitPrice(price);
+                    detail.setAmount(amount);
+                    toSave.add(detail);
+                    existingDetails.remove(dReq.getId());
                 } else {
-                    double price= getOutputPriceByProductID(dReq.getProId(), outputInvoiceRequest.getCreationTime());
+                    Warehouse wh = warehouseMap.get(dReq.getWhId());
+                    if (wh == null) {
+                        throw new IllegalArgumentException("Warehouse not found: " + dReq.getWhId());
+                    }
                     OutputInvoiceDetail newDetail = OutputInvoiceDetail.builder()
-                            .outputInvoice(updatedInputInvoice)
+                            .outputInvoice(outputInvoice)
                             .proId(dReq.getProId())
+                            .warehouse(wh)
                             .quantity(dReq.getQuantity())
                             .unitPrice(price)
-                            .amount(dReq.getQuantity() * price)
-                            .warehouse(wareHouseRepo.findById(dReq.getWhId()).orElse(null))
+                            .amount(amount)
                             .build();
-                    outputInvoiceDetailRepo.save(newDetail);
-                    total+=price*dReq.getQuantity();
-
+                    toSave.add(newDetail);
                 }
+                total += amount;
             }
-            outputInvoiceDetailRepo.deleteAll(existingDetails.values());
-            updatedInputInvoice.setTotalAmount(total);
-            outputInvoiceRepo.save(updatedInputInvoice);
-            return ResponseEntity.ok(MessageResponse.builder().message("Update output invoice successfully").build());
+            if (!toSave.isEmpty()) {
+                outputInvoiceDetailRepo.saveAll(toSave);
+            }
+            if (!existingDetails.isEmpty()) {
+                outputInvoiceDetailRepo.deleteAll(existingDetails.values());
+            }
+            outputInvoice.setTotalAmount(total);
+            outputInvoiceRepo.save(outputInvoice);
+
+            return ResponseEntity.ok(
+                    MessageResponse.builder().message("Update output invoice successfully").build()
+            );
         }catch (IllegalArgumentException ex) {
             return ResponseEntity.badRequest().body(MessageResponse.builder().message(ex.getMessage()).build());
         }

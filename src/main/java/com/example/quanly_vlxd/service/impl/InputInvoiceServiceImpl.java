@@ -217,46 +217,53 @@ public class InputInvoiceServiceImpl implements InputInvoiceService  {
             inputInvoice.setSupplier(supplier);
             inputInvoice.setEmployee(employee);
             inputInvoice.setUpdateTime(inputInvoiceRequest.getUpdateTime());
-            InputInvoice updatedInputInvoice = inputInvoiceRepo.save(inputInvoice);
-
+            inputInvoiceRepo.save(inputInvoice);
 
             Map<Integer, InputInvoiceDetail> existingDetails = inputInvoice.getInputInvoiceDetails()
                     .stream()
                     .collect(Collectors.toMap(InputInvoiceDetail::getId, d -> d));
 
-            double total=0.0;
+            List<InputInvoiceDetail> detailsToSave = new ArrayList<>();
+
+            // Update or add details
             for (InputInvoiceDetailRequest dReq : inputInvoiceRequest.getListInvoiceDetails()) {
+                double price = getInputPriceByProductID(dReq.getProId(), inputInvoice.getCreationTime());
+
                 if (dReq.getId() != 0) {
                     InputInvoiceDetail detail = existingDetails.get(dReq.getId());
                     if (detail != null) {
                         detail.setQuantity(dReq.getQuantity());
-                        double price= getInputPriceByProductID(dReq.getProId(), inputInvoiceRequest.getCreationTime());
                         detail.setUnitPrice(price);
                         detail.setAmount(dReq.getQuantity() * price);
-                        inputInvoiceDetailRepo.save(detail);
+                        detailsToSave.add(detail);
                         existingDetails.remove(dReq.getId());
-                        total+=price*dReq.getQuantity();
                     }
                 } else {
-                    double price= getInputPriceByProductID(dReq.getProId(), inputInvoiceRequest.getCreationTime());
                     InputInvoiceDetail newDetail = InputInvoiceDetail.builder()
-                        .inputInvoice(updatedInputInvoice)
-                        .product(productRepo.findById(dReq.getProId()).orElse(null))
-                        .quantity(dReq.getQuantity())
-                        .unitPrice(price)
-                        .amount(dReq.getQuantity() * price)
-                        .warehouse(wareHouseRepo.findById(dReq.getWhId()).orElse(null))
-                        .build();
-                    inputInvoiceDetailRepo.save(newDetail);
-                    total+=price*dReq.getQuantity();
-
+                            .inputInvoice(inputInvoice)
+                            .product(productRepo.findById(dReq.getProId())
+                                    .orElseThrow(() -> new IllegalArgumentException("Product not found")))
+                            .warehouse(wareHouseRepo.findById(dReq.getWhId())
+                                    .orElseThrow(() -> new IllegalArgumentException("Warehouse not found")))
+                            .quantity(dReq.getQuantity())
+                            .unitPrice(price)
+                            .amount(dReq.getQuantity() * price)
+                            .build();
+                    detailsToSave.add(newDetail);
                 }
             }
+
+            inputInvoiceDetailRepo.saveAll(detailsToSave);
             inputInvoiceDetailRepo.deleteAll(existingDetails.values());
-            updatedInputInvoice.setTotalAmount(total);
-            inputInvoiceRepo.save(updatedInputInvoice);
-            return ResponseEntity.ok(MessageResponse.builder().message("Update input invoice successfully").build());
-        }catch (IllegalArgumentException ex) {
+
+            Double total = inputInvoiceDetailRepo.sumAmountByInvoiceId(inputInvoice.getId());
+            inputInvoice.setTotalAmount(total != null ? total : 0.0);
+            inputInvoiceRepo.save(inputInvoice);
+            return ResponseEntity.ok(
+                    MessageResponse.builder().message("Update input invoice successfully").build()
+            );
+
+        } catch (IllegalArgumentException ex) {
             return ResponseEntity.badRequest().body(MessageResponse.builder().message(ex.getMessage()).build());
         }
     }
