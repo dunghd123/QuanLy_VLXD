@@ -61,4 +61,23 @@ public interface ReportRepository extends JpaRepository<OutputInvoice, Integer> 
             @Param("start") Date start,
             @Param("end") Date end
     );
+
+
+    @Query(value = """
+        SELECT m.month AS month,
+               COALESCE(SUM(o.oi_total_amount), 0) AS totalAmount
+        FROM (
+          SELECT 1 AS month UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION
+          SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION
+          SELECT 9 UNION SELECT 10 UNION SELECT 11 UNION SELECT 12
+        ) m
+        LEFT JOIN output_invoices o
+               ON MONTH(o.oi_creation_time) = m.month
+              AND YEAR(o.oi_creation_time) = :year
+              AND o.isactive = 1
+              AND o.oi_status = 'COMPLETED'
+        GROUP BY m.month
+        ORDER BY m.month
+    """, nativeQuery = true)
+    List<Object[]> findRevenueByMonth(@Param("year") int year);
 }

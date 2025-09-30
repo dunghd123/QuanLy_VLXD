@@ -16,5 +16,6 @@ public interface OutputInvoiceService {
     ResponseEntity<MessageResponse> deleteOutputInvoice(int id);
     Page<OutputInvoiceResponse> getAllOutputInvoiceByEmp(OutputFilterRequest outputFilterRequest, String username);
     Page<OutputInvoiceResponse> getAllPendingOutputInvoiceByEmp(int page, int size);
+    Page<OutputInvoiceResponse> getAllOutputInvoice(int page, int size);
 
 }

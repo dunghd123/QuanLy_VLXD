@@ -61,6 +61,12 @@ public class OutputInvoiceController {
             @RequestParam(defaultValue = "10") int size){
         return ResponseEntity.ok(outputInvoiceService.getAllPendingOutputInvoiceByEmp(page, size));
     }
+    @GetMapping("getAllOutputInvoice")
+    public ResponseEntity<Page<OutputInvoiceResponse>> getAllOutputInvoice(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size){
+        return ResponseEntity.ok(outputInvoiceService.getAllOutputInvoice(page, size));
+    }
     @PutMapping("approve-output-invoice/{id}")
     public ResponseEntity<MessageResponse> approveOutputInvoice(@PathVariable(value = "id") int id){
         return outputInvoiceService.approveOutputInvoice(id);

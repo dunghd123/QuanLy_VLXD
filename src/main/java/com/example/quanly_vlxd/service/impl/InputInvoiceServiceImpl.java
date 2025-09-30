@@ -318,12 +318,21 @@ public class InputInvoiceServiceImpl implements InputInvoiceService  {
     }
 
     @Override
-    public Page<InputInvoiceResponse> getAllPendingInputInvoiceByEmp(int page, int size) {
+    public Page<InputInvoiceResponse> getAllPendingInputInvoice(int page, int size) {
         Sort sort = Sort.by(Sort.Order.desc("creationTime"));
         Pageable pageable = PageRequest.of(page, size, sort);
         Specification<InputInvoice> spec = Specification.where(null);
         spec= spec.and((root, query, cb) -> cb.equal(root.get("isActive"), true));
         spec = spec.and((root, query, cb) -> cb.equal(root.get("status"), InvoiceStatusEnums.PENDING));
+        return inputInvoiceRepo.findAll(spec, pageable).map(this::convertToInputInvoiceResponse);
+    }
+
+    @Override
+    public Page<InputInvoiceResponse> getAllInputInvoice(int page, int size) {
+        Sort sort = Sort.by(Sort.Order.desc("creationTime"));
+        Pageable pageable = PageRequest.of(page, size, sort);
+        Specification<InputInvoice> spec = Specification.where(null);
+        spec= spec.and((root, query, cb) -> cb.equal(root.get("isActive"), true));
         return inputInvoiceRepo.findAll(spec, pageable).map(this::convertToInputInvoiceResponse);
     }
 

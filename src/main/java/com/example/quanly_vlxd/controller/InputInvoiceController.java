@@ -65,10 +65,16 @@ public class InputInvoiceController {
         return ResponseEntity.ok(inputInvoiceService.getAllInputInvoiceByEmp(filter, username));
     }
     @GetMapping("getAllPendingInputInvoiceByEmp")
-    public ResponseEntity<Page<InputInvoiceResponse>> getAllPendingInputInvoiceByEmp(
+    public ResponseEntity<Page<InputInvoiceResponse>> getAllPendingInputInvoice(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size){
-        return ResponseEntity.ok(inputInvoiceService.getAllPendingInputInvoiceByEmp(page, size));
+        return ResponseEntity.ok(inputInvoiceService.getAllPendingInputInvoice(page, size));
+    }
+    @GetMapping("getAllInputInvoice")
+    public ResponseEntity<Page<InputInvoiceResponse>> getAllInputInvoice(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size){
+        return ResponseEntity.ok(inputInvoiceService.getAllInputInvoice(page, size));
     }
     @PutMapping("approve-input-invoice/{id}")
     public ResponseEntity<MessageResponse> approveInputInvoice(@PathVariable(value = "id") int id){

@@ -121,13 +121,8 @@ public class OutputInvoiceServiceImpl implements OutputInvoiceService {
         }
     }
     private OutputInvoice getOutputInvoice(int id) {
-        OutputInvoice invoice = outputInvoiceRepo.findById(id)
+        return outputInvoiceRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Invoice not found"));
-
-        if (invoice.getStatus() != InvoiceStatusEnums.PENDING) {
-            throw new RuntimeException("Only pending invoices can be approved");
-        }
-        return invoice;
     }
 
     @Override
@@ -295,6 +290,15 @@ public class OutputInvoiceServiceImpl implements OutputInvoiceService {
         Specification<OutputInvoice> spec = Specification.where(null);
         spec = spec.and((root, query, cb) -> cb.equal(root.get("isActive"),true));
         spec = spec.and((root, query, cb) -> cb.equal(root.get("status"), InvoiceStatusEnums.PENDING));
+        return outputInvoiceRepo.findAll(spec, pageable).map(this::convertToOutputInvoiceResponse);
+    }
+
+    @Override
+    public Page<OutputInvoiceResponse> getAllOutputInvoice(int page, int size) {
+        Sort sort = Sort.by(Sort.Order.desc("creationTime"));
+        Pageable pageable = PageRequest.of(page, size, sort);
+        Specification<OutputInvoice> spec = Specification.where(null);
+        spec = spec.and((root, query, cb) -> cb.equal(root.get("isActive"),true));
         return outputInvoiceRepo.findAll(spec, pageable).map(this::convertToOutputInvoiceResponse);
     }
 
