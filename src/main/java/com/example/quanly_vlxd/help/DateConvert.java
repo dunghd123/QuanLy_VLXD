@@ -1,10 +1,20 @@
 package com.example.quanly_vlxd.help;
 
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.Calendar;
 import java.util.Date;
 
 public class DateConvert {
+
+    public static Date convertStringToDate(String date) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        try {
+            return dateFormat.parse(date);
+        }catch (Exception e) {
+            return null;
+        }
+    }
 
     private static Date convertDate(int year, int month, int day) {
         Calendar cal= Calendar.getInstance();

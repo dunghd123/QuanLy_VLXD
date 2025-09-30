@@ -8,8 +8,7 @@ import lombok.*;
 @NoArgsConstructor
 @Builder
 public class SalesCustomerResponse {
-    private int cusId;
+    private Integer cusId;
     private String cusName;
-    private int outputInvoiceId;
-    private String total;
+    private Double totalAmount;
 }
