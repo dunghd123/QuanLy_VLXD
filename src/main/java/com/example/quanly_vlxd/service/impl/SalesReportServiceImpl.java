@@ -1,9 +1,6 @@
 package com.example.quanly_vlxd.service.impl;
 
-import com.example.quanly_vlxd.dto.response.SaleReportResponse;
-import com.example.quanly_vlxd.dto.response.SalesCustomerResponse;
-import com.example.quanly_vlxd.dto.response.SalesEmployeeResponse;
-import com.example.quanly_vlxd.dto.response.SalesProductResponse;
+import com.example.quanly_vlxd.dto.response.*;
 import com.example.quanly_vlxd.enums.ReportTypeEnums;
 import com.example.quanly_vlxd.repo.*;
 import com.example.quanly_vlxd.service.SalesReportService;
@@ -32,9 +29,16 @@ public class SalesReportServiceImpl implements SalesReportService {
     private final ReportRepository reportRepository;
 
 
-    public SaleReportResponse getRevenueByEmployee(Date start, Date end) {
-        List<SalesEmployeeResponse> details = reportRepository.findRevenueByEmployee(start, end);
-
+    private SaleReportResponse getRevenueByEmployee(Date start, Date end) {
+        List<Object[]> rows = reportRepository.findRevenueByEmployee(start, end);
+        List<SalesEmployeeResponse> details = new ArrayList<>();
+        for(Object[] row : rows){
+            details.add(new SalesEmployeeResponse(
+                    ((Number) row[0]).intValue(),
+                    row[1].toString(),
+                    ((Number) row[2]).doubleValue()
+            ));
+        }
         BigDecimal totalRevenue = details.stream()
                 .map(r -> BigDecimal.valueOf(r.getTotalAmount()))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -51,7 +55,7 @@ public class SalesReportServiceImpl implements SalesReportService {
     }
 
 
-    public SaleReportResponse getRevenueByProduct(Date start, Date end) {
+    private SaleReportResponse getRevenueByProduct(Date start, Date end) {
         List<Object[]> rows = reportRepository.findRevenueByProductNative(start, end);
         List<SalesProductResponse> details = new ArrayList<>();
 
@@ -80,7 +84,7 @@ public class SalesReportServiceImpl implements SalesReportService {
     }
 
 
-    public SaleReportResponse getRevenueByCustomer(Date start, Date end) {
+    private SaleReportResponse getRevenueByCustomer(Date start, Date end) {
         List<Object[]> rows = reportRepository.findRevenueByCustomer(start, end);
         List<SalesCustomerResponse> details = new ArrayList<>();
 
@@ -106,6 +110,44 @@ public class SalesReportServiceImpl implements SalesReportService {
                 .details(details)
                 .build();
     }
+    private SaleReportResponse getRevenueByMonth(int year){
+        List<Object[]> rows = reportRepository.findRevenueByMonth(year);
+        List<SalesMonthResponse> details = new ArrayList<>();
+        for(Object[] row : rows){
+            details.add(new SalesMonthResponse(
+                    ((Number) row[0]).intValue(),
+                    ((Number) row[1]).doubleValue())
+            );
+        }
+        BigDecimal totalRevenue = details.stream().map(r -> BigDecimal.valueOf(r.getTotalAmount())).reduce(BigDecimal.ZERO, BigDecimal::add);
+        SaleReportResponse.Summary summary = SaleReportResponse.Summary.builder()
+                .totalRevenue(totalRevenue)
+                .recordCount(details.size())
+                .build();
+        return SaleReportResponse.builder()
+                .summary(summary)
+                .details(details)
+                .build();
+    }
+    private SaleReportResponse getRevenueByQuarter(int year){
+        List<Object[]> rows = reportRepository.findRevenueByQuarter(year);
+        List<SalesQuarterResponse> details = new ArrayList<>();
+        for(Object[] row : rows){
+            details.add(new SalesQuarterResponse(
+                    ((Number) row[0]).intValue(),
+                    ((Number) row[1]).doubleValue()
+            ));
+        }
+        BigDecimal totalRevenue = details.stream().map(r -> BigDecimal.valueOf(r.getTotalAmount())).reduce(BigDecimal.ZERO, BigDecimal::add);
+        SaleReportResponse.Summary summary = SaleReportResponse.Summary.builder()
+                .totalRevenue(totalRevenue)
+                .recordCount(details.size())
+                .build();
+        return SaleReportResponse.builder()
+                .summary(summary)
+                .details(details)
+                .build();
+    }
 
     @Override
     public SaleReportResponse getRevenueInDate(Date start, Date end, String type) {
@@ -116,6 +158,16 @@ public class SalesReportServiceImpl implements SalesReportService {
         else if(ReportTypeEnums.CUSTOMER.name().equalsIgnoreCase(type))
             return getRevenueByCustomer(start, end);
         else return null;
+    }
+
+    @Override
+    public SaleReportResponse getRevenueInMonth(int year) {
+        return getRevenueByMonth(year);
+    }
+
+    @Override
+    public SaleReportResponse getRevenueInQuarter(int year) {
+        return getRevenueByQuarter(year);
     }
 
 //    //chi tiet ban hang

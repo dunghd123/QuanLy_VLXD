@@ -1,6 +1,5 @@
 package com.example.quanly_vlxd.repo;
 
-import com.example.quanly_vlxd.dto.response.SalesEmployeeResponse;
 import com.example.quanly_vlxd.entity.OutputInvoice;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -12,17 +11,15 @@ import java.util.List;
 
 @Repository
 public interface ReportRepository extends JpaRepository<OutputInvoice, Integer> {
-    @Query("""
-       SELECT new com.example.quanly_vlxd.dto.response.SalesEmployeeResponse(
-           e.id, e.name, o.totalAmount
-       )
-       FROM OutputInvoice o
-       JOIN o.employee e
-       WHERE o.creationTime BETWEEN :start AND :end
-             AND o.status = com.example.quanly_vlxd.enums.InvoiceStatusEnums.COMPLETED
-       GROUP BY e.id, e.name
-    """)
-    List<SalesEmployeeResponse> findRevenueByEmployee(
+    @Query(value = """
+    SELECT  e.emp_id AS empId,
+            e.emp_name AS empName,
+            SUM(oi_total_amount) AS totalAmount
+       FROM output_invoices o INNER JOIN employees e ON o.emp_id= e.emp_id
+       WHERE o.oi_status = "COMPLETED" AND o.oi_creation_time BETWEEN :start AND :end
+       GROUP BY e.emp_id, e.emp_name
+    """, nativeQuery = true)
+    List<Object[]> findRevenueByEmployee(
             @Param("start") Date start,
             @Param("end") Date end
     );
@@ -80,4 +77,20 @@ public interface ReportRepository extends JpaRepository<OutputInvoice, Integer> 
         ORDER BY m.month
     """, nativeQuery = true)
     List<Object[]> findRevenueByMonth(@Param("year") int year);
+
+    @Query(value = """
+        SELECT q.quarter AS quarter,
+               COALESCE(SUM(o.oi_total_amount), 0) AS totalAmount
+        FROM (
+          SELECT 1 AS quarter UNION SELECT 2 UNION SELECT 3 UNION SELECT 4
+        ) q
+        LEFT JOIN output_invoices o
+               ON QUARTER(o.oi_creation_time) = q.quarter
+              AND YEAR(o.oi_creation_time) = :year
+              AND o.isactive = 1
+              AND o.oi_status = 'COMPLETED'
+        GROUP BY q.quarter
+        ORDER BY q.quarter
+    """, nativeQuery = true)
+    List<Object[]> findRevenueByQuarter(@Param("year") int year);
 }

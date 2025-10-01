@@ -24,6 +24,14 @@ public class SalesReportController {
 
         return ResponseEntity.ok(salesReportService.getRevenueInDate(convertStringToDate(request.getStartDate()), convertStringToDate(request.getEndDate()), request.getTypeReport()));
     }
+    @PostMapping("revenue-report-by-month")
+    public ResponseEntity<SaleReportResponse> getRevenueByMonth(@RequestParam int year) {
+        return ResponseEntity.ok(salesReportService.getRevenueInMonth(year));
+    }
+    @PostMapping("revenue-report-by-quarter")
+    public ResponseEntity<SaleReportResponse> getRevenueByQuarter(@RequestParam int year) {
+        return ResponseEntity.ok(salesReportService.getRevenueInQuarter(year));
+    }
 //    //thong ke doanh thu
 //    @GetMapping("sales-report-by-quater")
 //        public SalesReportResponse generateSalesReportByQuarter(@Valid @RequestBody SalesRevenueQuarterRequest request) {

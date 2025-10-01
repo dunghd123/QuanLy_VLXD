@@ -8,6 +8,9 @@ import java.util.Date;
 public interface SalesReportService {
     SaleReportResponse getRevenueInDate(Date start, Date end, String type);
 
+    SaleReportResponse getRevenueInMonth(int year);
+    SaleReportResponse getRevenueInQuarter(int year);
+
 //    List<SalesDetailResponse> generateSalesReportDetailed(SalesDetailReportRequest request);
 //    SalesReportResponse generateSalesReportRevenue(SalesDetailReportRequest request);
 //    SalesReportResponse generateSalesReportByQuarter(SalesRevenueQuarterRequest request);
