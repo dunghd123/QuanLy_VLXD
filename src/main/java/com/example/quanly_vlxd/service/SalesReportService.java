@@ -10,6 +10,7 @@ public interface SalesReportService {
 
     SaleReportResponse getRevenueInMonth(int year);
     SaleReportResponse getRevenueInQuarter(int year);
+    SaleReportResponse getRegionRevenue(int year);
 
 //    List<SalesDetailResponse> generateSalesReportDetailed(SalesDetailReportRequest request);
 //    SalesReportResponse generateSalesReportRevenue(SalesDetailReportRequest request);

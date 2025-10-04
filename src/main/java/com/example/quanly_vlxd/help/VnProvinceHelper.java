@@ -28,16 +28,19 @@ public class VnProvinceHelper {
         for(String mb: tinhMienBac){
             if(address.contains(mb)){
                 result="Miền Bắc";
+                break;
             }
         }
         for(String mt: tinhMienTrung){
             if(address.contains(mt)){
                 result="Miền Trung";
+                break;
             }
         }
         for(String mb: tinhMienNam){
             if(address.contains(mb)){
                 result="Miền Nam";
+                break;
             }
         }
         return result;

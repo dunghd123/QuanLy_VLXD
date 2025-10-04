@@ -32,6 +32,10 @@ public class SalesReportController {
     public ResponseEntity<SaleReportResponse> getRevenueByQuarter(@RequestParam int year) {
         return ResponseEntity.ok(salesReportService.getRevenueInQuarter(year));
     }
+    @PostMapping("revenue-report-by-region")
+    public ResponseEntity<SaleReportResponse> getRevenueByRegion(@RequestParam int year) {
+        return ResponseEntity.ok(salesReportService.getRegionRevenue(year));
+    }
 //    //thong ke doanh thu
 //    @GetMapping("sales-report-by-quater")
 //        public SalesReportResponse generateSalesReportByQuarter(@Valid @RequestBody SalesRevenueQuarterRequest request) {
@@ -79,8 +83,8 @@ public class SalesReportController {
 //    public void generateSalesReportByRegion() throws Exception {
 //        salesReportService.generateReportRegionToPdf();
 //    }
-    @ResponseStatus(HttpStatus.BAD_REQUEST) // Trả về mã 400 BAD_REQUEST
-    @ExceptionHandler(MethodArgumentNotValidException.class) // Xử lý ngoại lệ MethodArgumentNotValidException
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(MethodArgumentNotValidException.class)
     public Map<String, String> handleValidationExceptions(MethodArgumentNotValidException ex) {
         return getMapErrors(ex);
     }

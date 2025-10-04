@@ -79,5 +79,7 @@ public interface OutputInvoiceRepo extends JpaRepository<OutputInvoice,Integer>,
 
     @Query(value = "select * from output_invoices o where o.oi_creation_time between ?1 and ?2",nativeQuery = true)
     List<OutputInvoice> findByCreationTimeBetween(Date startDate, Date endDate);
+    @Query(value = "select * from output_invoices o where YEAR(o.oi_creation_time) = ?1",nativeQuery = true)
+    List<OutputInvoice> findAllInYear(int year);
 
 }

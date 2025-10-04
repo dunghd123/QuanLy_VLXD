@@ -1,6 +1,8 @@
 package com.example.quanly_vlxd.service.impl;
 
 import com.example.quanly_vlxd.dto.response.*;
+import com.example.quanly_vlxd.entity.Customer;
+import com.example.quanly_vlxd.entity.OutputInvoice;
 import com.example.quanly_vlxd.enums.ReportTypeEnums;
 import com.example.quanly_vlxd.repo.*;
 import com.example.quanly_vlxd.service.SalesReportService;
@@ -11,6 +13,8 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
+import static com.example.quanly_vlxd.help.VnProvinceHelper.checkAddress;
 
 @Service
 @RequiredArgsConstructor
@@ -168,6 +172,42 @@ public class SalesReportServiceImpl implements SalesReportService {
     @Override
     public SaleReportResponse getRevenueInQuarter(int year) {
         return getRevenueByQuarter(year);
+    }
+
+    @Override
+    public SaleReportResponse getRegionRevenue(int year) {
+        List<SalesRegionResponse> details = new ArrayList<>();
+        details.add(revenueByRegion("Miền Bắc", year));
+        details.add(revenueByRegion("Miền Trung", year));
+        details.add(revenueByRegion("Miền Nam", year));
+        BigDecimal totalRevenue = details.stream().map(r -> BigDecimal.valueOf(r.getTotalAmount())).reduce(BigDecimal.ZERO, BigDecimal::add);
+        SaleReportResponse.Summary summary = SaleReportResponse.Summary.builder()
+                .totalRevenue(totalRevenue)
+                .recordCount(details.size())
+                .build();
+        return SaleReportResponse.builder()
+                .summary(summary)
+                .details(details)
+                .build();
+    }
+
+
+    private SalesRegionResponse revenueByRegion(String region, int year){
+        double total= 0.0;
+        for(OutputInvoice oi: outputInvoiceRepository.findAllInYear(year)){
+            if(!oi.getShipAddress().equalsIgnoreCase("") && checkAddress(oi.getShipAddress()).equals(region)){
+                total+= oi.getTotalAmount();
+            }else if(oi.getShipAddress().equalsIgnoreCase("")){
+                Customer cus = customerRepository.findById(oi.getCustomer().getId()).orElseThrow();
+                if(checkAddress(cus.getAddress()).equals(region)){
+                    total+= oi.getTotalAmount();
+                }
+            }
+        }
+        return SalesRegionResponse.builder()
+                .region(region)
+                .totalAmount(total)
+                .build();
     }
 
 //    //chi tiet ban hang
