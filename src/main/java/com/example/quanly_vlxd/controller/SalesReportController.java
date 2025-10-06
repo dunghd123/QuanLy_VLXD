@@ -36,45 +36,6 @@ public class SalesReportController {
     public ResponseEntity<SaleReportResponse> getRevenueByRegion(@RequestParam int year) {
         return ResponseEntity.ok(salesReportService.getRegionRevenue(year));
     }
-//    //thong ke doanh thu
-//    @GetMapping("sales-report-by-quater")
-//        public SalesReportResponse generateSalesReportByQuarter(@Valid @RequestBody SalesRevenueQuarterRequest request) {
-//        return salesReportService.generateSalesReportByQuarter(request);
-//    }
-//    @GetMapping("sales-report-revenue")
-//    public SalesReportResponse generateSalesReportRevenue(@RequestBody SalesDetailReportRequest request) {
-//        return salesReportService.generateSalesReportRevenue(request);
-//    }
-//    @GetMapping("total-revenue-by-quater")
-//    public List<SalesQuarterResponse> generateTotalRevenueAllQuater(@RequestParam int year) {
-//        return salesReportService.allQuarterReport(year);
-//    }
-//    @GetMapping("total-revenue-by-region")
-//    public SalesReportResponse generateTotalRevenueByRegion(@Valid @RequestBody SalesRevenueByRegionRequest request) {
-//        return salesReportService.salesRevenueByRegion(request);
-//    }
-//    @GetMapping("total-amount-input-invoice")
-//    public SalesReportResponse getTotalAmountInputInvoice(@Valid @RequestBody InputInvoiceReportRequest request) {
-//        return salesReportService.getTotalAmountInputInvoice(request);
-//    }
-//    //
-//    @GetMapping("sales-revenue-by-month")
-//    public List<SalesMonthResponse> getTotalAmountByMonth(@RequestParam int year) {
-//        return salesReportService.salesRevenueByMonth(year);
-//    }
-//    @GetMapping("sales-report-detailed")
-//    public List<SalesDetailResponse> generateSalesReportDetailed(@RequestBody SalesDetailReportRequest request) {
-//        return salesReportService.generateSalesReportDetailed(request);
-//    }
-//    @GetMapping("total-amount-by-quater")
-//    public SalesReportResponse getTotalAmountByQuarter(@Valid @RequestBody SalesRevenueQuarterRequest request) {
-//        return salesReportService.getTotalAmountByQuater(request);
-//    }
-//    @GetMapping("sales-revenue-by-product")
-//    public SalesRevenueProductResponse salesRevenueProduct(@RequestParam int proId) {
-//        return salesReportService.salesRevenueProduct(proId);
-//    }
-//
 //    @GetMapping("generate-sales-report-to-Pdf-by-quater")
 //    public void generateSalesReportByQuarter(@RequestParam int year) throws Exception {
 //        salesReportService.generateReportQuaterToPdf(year);
